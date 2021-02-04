@@ -145,6 +145,8 @@ func get_liberties(x *node) []*node {
 	return liberties
 }
 
+// added to gameplay/gamestate.go
+
 func modify_stoneGroups(y *node) {
 	var friendlies []*node
 	var enemies []*node
@@ -212,6 +214,7 @@ func modify_stoneGroups(y *node) {
 }
 
 // removes stones from groups without liberties
+// MOVED TO gamestate.go
 func (x boardState) remove_dead(y *node) error {
 	var enemies []*node
 	enemies = get_opp_color_neighbors(y)
