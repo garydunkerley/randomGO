@@ -1,19 +1,11 @@
+package boards
 
 import (
 	"math/rand"
 	"time"
 )
 
-func initializeNode(i int) *node {
-	// initializes empty nodes whose names are integers
-
-	var x node
-	x.name = i
-	x.color = 0
-	return &x
-}
-
-func initializeBoard(n int, prob float64) goGraph {
+func makeRandomBoard(n int, prob float64) goGraph {
 	var ourGraph goGraph
 	var ourMap = make(map[int]*node)
 
