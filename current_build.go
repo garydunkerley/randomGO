@@ -44,7 +44,7 @@ func (x *node) set_neighbors(y []*node) {
 	return
 }
 
-// Determine if a move is legal or not.`
+// This was placed in its own script
 func (y boardState) check_legal_move(n int) error {
 	node, ok := y.current_board.nodes[n]
 	if !ok {
@@ -105,6 +105,7 @@ func (y boardState) illegal_ko_move(n int) bool {
 // The next three functions could be consolidated into a single function
 // that returns nodes of a given color
 
+// these have been consolidated into a single function called getNeighbors
 func get_same_color_neighbors(x *node) []*node {
 	var friends []*node
 	if x.color == 0 {
