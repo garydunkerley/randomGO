@@ -2,6 +2,7 @@ package boards
 
 import (
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -14,7 +15,7 @@ func makeRandomBoard(n int, prob float64) goGraph {
 	var v float64
 
 	for i := 0; i < n; i++ {
-		newNode = initializeNode(i)
+		newNode = initializeNode(i, strconv.Itoa(i))
 
 		ourMap[i] = newNode
 		// add the new node to the goGraph struct
