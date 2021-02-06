@@ -1,15 +1,15 @@
-package boards
+package game
 
 import (
 	"fmt"
 	"strconv"
 )
 
-func MakeSquareBoard(n int, m int) goGraph {
+func MakeSquareBoard(n int, m int) GoGraph {
 	var name string
 	goban_map := make(map[int]*node)
 	coord_map := make(map[[2]int]int)
-	var ourGraph goGraph
+	var ourGraph GoGraph
 	var newNode *node
 	//initialize all nodes
 

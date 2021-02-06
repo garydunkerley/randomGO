@@ -1,4 +1,4 @@
-package gameplay
+package game
 
 func modify_stoneGroups(y *node) {
 	var friendlies []*node

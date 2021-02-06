@@ -1,4 +1,4 @@
-package boards
+package game
 
 type node struct {
 	name      string
@@ -15,16 +15,16 @@ type stoneGroup struct {
 	// https://softwareengineering.stackexchange.com/questions/177428/sets-data-structure-in-golang
 }
 
-type goGraph struct {
+type GoGraph struct {
 	nodes        map[int]*node
 	coords       map[[2]int]int
 	coord_bounds []int //for example, [9,9] for a 9 by 9 board
 }
 
 type boardState struct {
-	current_board goGraph
+	current_board GoGraph
 	white_to_move bool
 	move_history  []string
-	board_history []goGraph // to determine if move violates ko rule
+	board_history []GoGraph // to determine if move violates ko rule
 	move_count    int
 }

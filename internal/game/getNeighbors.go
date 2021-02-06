@@ -1,4 +1,4 @@
-package gameplay
+package game
 
 // this script combines the get_same_color and get_opp_color functions from the original script.
 

@@ -1,4 +1,4 @@
-package gameplay
+package game
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
-func (myBoard goGraph) runGame() {
+func (myBoard GoGraph) RunGame() {
 	var game_state boardState
 	var consecutive_passes int
 	var valid_id bool //used to avoid code repetition later on

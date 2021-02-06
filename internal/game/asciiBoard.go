@@ -2,7 +2,7 @@ package game
 
 import "strings"
 
-func (G goGraph) String() string {
+func (G GoGraph) String() string {
 	//will edit these in the core loop
 	var current_line string
 	var ij [2]int

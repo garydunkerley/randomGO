@@ -1,4 +1,4 @@
-package boards
+package game
 
 import (
 	"math/rand"
@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func makeRandomBoard(n int, prob float64) goGraph {
-	var ourGraph goGraph
+func makeRandomBoard(n int, prob float64) GoGraph {
+	var ourGraph GoGraph
 	var ourMap = make(map[int]*node)
 
 	var newNode *node

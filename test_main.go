@@ -1,11 +1,10 @@
 package main
 
 import (
-	boards "github.com/garydunkerley/randomGO/internal/boards"
+	game "github.com/garydunkerley/randomGO/internal/game"
 )
 
 func main() {
-	theBoard := boards.makeSquareBoard(5, 5)
-	theBoard.runGame()
-
+	squareBoard := game.MakeSquareBoard(5, 5)
+	squareBoard.RunGame()
 }

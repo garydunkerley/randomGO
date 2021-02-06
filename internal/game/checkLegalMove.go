@@ -3,7 +3,7 @@
 // 2. You may not play a move that results in the suicide of your stone group.
 // 3. You may not replicate a previously extant board state.
 
-package gameplay
+package game
 
 import (
 	"errors"

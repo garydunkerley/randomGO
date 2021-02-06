@@ -1,4 +1,4 @@
-package boards
+package game
 
 func initializeNode(i int, a string) *node {
 	// initializes empty nodes whose ids are integers
