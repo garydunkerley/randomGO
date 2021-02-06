@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func makeSquareBoard(n int, m int) goGraph {
+func MakeSquareBoard(n int, m int) goGraph {
 	var name string
 	goban_map := make(map[int]*node)
 	coord_map := make(map[[2]int]int)
