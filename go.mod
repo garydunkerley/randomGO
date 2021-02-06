@@ -1,4 +1,4 @@
-module randomGO
+module github.com/garydunkerley/randomGO
 
 go 1.14
 
