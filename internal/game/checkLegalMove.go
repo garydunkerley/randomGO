@@ -9,8 +9,8 @@ import (
 	"errors"
 )
 
-func (y boardState) check_legal_move(n int) error {
-	node, ok := y.current_board.nodes[n]
+func (y boardState) checkLegalMove(n int) error {
+	node, ok := y.nodes[n]
 	if !ok {
 		return errors.New("Illegal move: nonexistent node.")
 	}
