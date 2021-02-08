@@ -25,10 +25,10 @@ func modifyStonegroups(y *node) {
 
 	if len(friendlies) > 0 {
 		// joins together neighboring friendly groups
-		mergedGroup = friendlies[0].inGroup
+		mergedGroup = friendlies[0].group
 
 		for i := 0; i < len(friendlies); i++ {
-			oldGroup = friendlies[i].inGroup
+			oldGroup = friendlies[i].group
 			// set oldGroup to the group of the ith friendly node
 			for key := range oldGroup.liberties {
 				if key != y {
@@ -53,7 +53,7 @@ func modifyStonegroups(y *node) {
 
 		mergedGroup.stones = newStones // update the stones and liberties of y's group
 		mergedGroup.liberties = newLibs
-		y.inGroup = mergedGroup
+		y.group = mergedGroup
 	} else {
 		// if y is not next to any friendly stones
 		// make a group containing y
@@ -66,11 +66,11 @@ func modifyStonegroups(y *node) {
 
 		newGroup.liberties = newLibs
 
-		y.inGroup = &newGroup
+		y.group = &newGroup
 	}
 	if len(enemies) > 0 {
 		for _, z := range enemies {
-			delete(z.inGroup.liberties, y)
+			delete(z.group.liberties, y)
 		}
 	}
 }
@@ -82,12 +82,12 @@ func (x boardState) removeDead(y *node) {
 		return nil
 	} else {
 		for i := 0; i < len(enemies); i++ {
-			if len(enemies[i].inGroup.liberties) == 0 {
+			if len(enemies[i].group.liberties) == 0 {
 				// if enemy group has no liberties
-				for z := range enemies[i].inGroup.stones {
+				for z := range enemies[i].group.stones {
 					z.color = 0
 					// change all stones into empty nodes
-					delete(enemies[i].inGroup.stones, z) // remove each stone from the map
+					delete(enemies[i].group.stones, z) // remove each stone from the map
 				}
 			}
 		}

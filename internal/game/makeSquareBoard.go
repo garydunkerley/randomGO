@@ -20,7 +20,7 @@ func MakeSquareBoard(n int, m int) GoGraph {
 			fmt.Println(name)
 
 			ourSlice := [2]int{i, j}
-			newNode = initializeNode(i*n+j, name)
+			newNode = initNode(i*n+j, name)
 			goban_map[i*n+j] = newNode
 			coord_map[ourSlice] = i*n + j
 

@@ -1,24 +1,27 @@
 package game
 
-//node represents an intersection on the board.
-//Every node should have a distinct integer id,
-//ranging from 0 to (# nodes - 1)
+// node represents an intersection on the board.
+// Every node should have a distinct integer id,
+// ranging from 0 to (# nodes - 1)
 type node struct {
-	name      string
+	name      string // deprecating unless there is a reason to care
 	id        int
 	neighbors []*node
 	color     int8       // color is 0 for empty, 1 for black, 2 for white
-	inGroup   stoneGroup // is a part of a given stone group
+	group     stoneGroup // is a part of a given stone group
 }
 
-//stoneGroup represents a contiguous string of stones.
+// stoneGroup represents a contiguous string of stones.
 type stoneGroup struct {
 	stones    map[int]bool // what stones are in here? Need to make all empty if group dies
 	liberties map[int]bool // what liberties does the group have
 	color     int8         // color is 0 for empty, 1 for black, 2 for white
 }
 
-//boardTop stores the information to construct a game board.
+// allGroups maps from color (1, 2) to all stoneGroups for that color.
+type allGroups map[int8][]stoneGroup
+
+// boardTop stores the information to construct a game board.
 type boardTop struct {
 	edges        map[int][]int
 	nodeCount    int            // We have node ids in the range [0, nodeCount - 1]
@@ -26,28 +29,28 @@ type boardTop struct {
 	coord_bounds []int          // optional, for example, [9,9] for a 9 by 9 board
 }
 
-//GoGraph contains a map of node ids to node pointers, and embeds boardTop
+// GoGraph contains a map of node ids to node pointers, and embeds boardTop
 type GoGraph struct {
 	nodes map[int]*node
 	boardTop
 }
 
-//boardState stores a current game state, including history
+// boardState stores a current game state, including history
 type boardState struct {
 	GoGraph
 	status
 	history
 }
 
-//status tracks current turn and if the game is currently active
+// status tracks current turn and if the game is currently active
 type status struct {
 	whiteToMove bool
 	ongoing     bool // true if game has not finished
 }
 
-//history stores pointer-free metadata for previous moves in game.
-//TODO: Zobrist hashing.
-//TODO: reconstruct a board state from a history object.
+// history stores pointer-free metadata for previous moves in game.
+// TODO: Zobrist hashing.
+// TODO: reconstruct a board state from a history object.
 type history struct {
 	moves             []move         // The move history does not store passes.
 	groups            [][]stoneGroup // Stores all groups. Does not update on passes.
@@ -57,13 +60,13 @@ type history struct {
 	blackPoints       int            // Accumulated points for black (captures)
 }
 
-//move is a moveInput and the associated number of captures made with the move
+// move is a moveInput and the associated number of captures made with the move
 type move struct {
 	moveInput
 	capturesMade int
 }
 
-//moveInput stores the color and id of a valid move, and a bool for passing (-1)
+// moveInput stores the color and id of a valid move, and a bool for passing (-1)
 type moveInput struct {
 	playerColor int8 // 1 black, 2 white, 0 empty (eg handicap stones)
 	id          int  // node ID of the move played
