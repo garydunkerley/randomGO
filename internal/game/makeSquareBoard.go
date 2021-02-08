@@ -35,5 +35,7 @@ func MakeSquareBoard(n int, m int) boardTop {
 		}
 	}
 
+	ourTopology.edges = edges
+	ourTopology.coords = coords
 	return ourTopology
 }
