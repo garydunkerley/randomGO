@@ -12,6 +12,12 @@ func (a boardTop) initGraph() GoGraph {
 		nodes:    nodes,
 		boardTop: a,
 	}
+	for i := 0; i < a.node_count; i++ {
+		for z := range a.edges[i] {
+			ourNodes[i].neighbors = append(ourNodes[i].neighbors, ourNodes[z])
+		}
+	}
+
 	return G
 }
 
