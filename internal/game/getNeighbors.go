@@ -31,14 +31,11 @@ func getOppColorNeighbors(x *node) (enemies []int) {
 
 // getLiberties returns the node IDs of all adjacent empty nodes.
 func getLiberties(x *node) (liberties []int) {
-	if x.color == 0 {
-		return liberties
-	} else {
-		for _, y := range x.neighbors {
-			if y.color == 0 {
-				liberties = append(liberties, y.id)
-			}
+	for _, y := range x.neighbors {
+		if y.color == 0 {
+			liberties = append(liberties, y.id)
 		}
 	}
+
 	return liberties
 }
