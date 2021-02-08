@@ -2,12 +2,12 @@ package game
 
 import (
 	"math/rand"
-	"strconv"
 	"time"
 )
 
-func makeRandomBoard(n int, prob float64) GoGraph {
-	// makeRandomBoard creates a board topology on n nodes such that any two nodes are connected via an edge with a fixed probability.
+// makeRandomBoard creates a board topology on n nodes such that
+// any two nodes are connected via an edge with a fixed probability.
+func makeRandomBoard(n int, prob float64) boardTop {
 	var ourTopology boardTop
 
 	edges := make(map[int][]int)
