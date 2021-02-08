@@ -10,8 +10,14 @@ import (
 )
 
 func (myBoard GoGraph) RunGame() {
+	// RunGame takes the current state of the board and, if it determines the game is on-going, requests and processes player input in order to act on the board state.
+
 	var game_state boardState
+	// game_State contains the colored graph representing the board, tracks whose turn it is, and contains the history of the board
+
 	var consecutive_passes int
+	// consecutive_passes is a value that increases each time a player passes and resets to zero if a player makes a non-passing move
+
 	var valid_id bool //used to avoid code repetition later on
 	var node_id int   //store player move only
 	game_state.current_board = myBoard
@@ -145,7 +151,7 @@ func (myBoard GoGraph) RunGame() {
 			}
 		}
 		if valid_id {
-			if err := game_state.check_legal_move(node_id); err != nil {
+			if err := game_state.check_legal_move(node_id, game_state.white_to_move); err != nil {
 				fmt.Println(err)
 				fmt.Println(try_again_msg)
 			} else {
@@ -158,6 +164,7 @@ func (myBoard GoGraph) RunGame() {
 				fmt.Println(myBoard)
 			}
 		}
+		fmt.Println("The number of boardstates in the board history is:", len(game_state.board_history))
 	}
 	fmt.Println("Game over. You lose.") // a little bit rigged
 }
