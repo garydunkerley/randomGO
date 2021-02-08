@@ -18,25 +18,31 @@ type stoneGroup struct {
 	color     int8         // color is 0 for empty, 1 for black, 2 for white
 }
 
+//boardTop stores the information to construct a game board.
+type boardTop struct {
+	edges        map[int][]int
+	nodeCount    int            // We have node ids in the range [0, nodeCount - 1]
+	coords       map[[2]int]int // optional, for boards with nice 2d representations
+	coord_bounds []int          // optional, for example, [9,9] for a 9 by 9 board
+}
+
 //GoGraph contains a map of node ids to node pointers, and embeds boardTop
 type GoGraph struct {
 	nodes map[int]*node
 	boardTop
 }
 
-//boardTop stores the information to construct a game board.
-type boardTop struct {
-	edges        map[int][]int
-	node_count   int            // We have node ids in the range [0, node_count - 1]
-	coords       map[[2]int]int // optional, for boards with nice 2d representations
-	coord_bounds []int          // optional, for example, [9,9] for a 9 by 9 board
-}
-
 //boardState stores a current game state, including history
 type boardState struct {
 	GoGraph
-	white_to_move bool
+	status
 	history
+}
+
+//status tracks current turn and if the game is currently active
+type status struct {
+	whiteToMove bool
+	ongoing     bool // true if game has not finished
 }
 
 //history stores pointer-free metadata for previous moves in game.
@@ -51,18 +57,24 @@ type history struct {
 	blackPoints       int            // Accumulated points for black (captures)
 }
 
-//move stores move information, such as the color and node id of a move.
+//move is a moveInput and the associated number of captures made with the move
 type move struct {
-	playerColor  int8   // 1 black, 2 white, 0 empty (eg handicap stones)
-	id           int    // node ID of the move played
-	capturesMade int    // Number of stones captured with this move.
-	name         string // coordinates or other string identifier
-	isPass       bool   // True if the player passed. Intentional redundancy: if node ID is -1, isPass is true.
+	moveInput
+	capturesMade int
 }
 
-// saveMoveAndGroups updates a history with the given move and group slice.
-// It does not check legality of the move or group slice.
-func (h *history) saveMoveAndGroups(m move, g []stoneGroup) {
+//moveInput stores the color and id of a valid move, and a bool for passing (-1)
+type moveInput struct {
+	playerColor int8 // 1 black, 2 white, 0 empty (eg handicap stones)
+	id          int  // node ID of the move played
+	isPass      bool // True if the player passed. Intentional redundancy: if node ID is -1, isPass is true.
+}
+
+// addMoveAndGroups updates a history with the given move and computed group slice.
+// It does not check legality of the move.
+// Called by playMove.
+func (h *history) addMoveAndGroups(m move) {
+	g := getStoneGroups(m.moveInput)
 	h.moveCount++
 	if m.isPass {
 		h.consecutivePasses++
@@ -84,12 +96,28 @@ func (h *history) saveMoveAndGroups(m move, g []stoneGroup) {
 
 // TODO: use this function to count how many stones are captured by the given move.
 // Can assume the move is legal.
-func (s boardState) getCaptures(m move) int {
-	captureCount = 0
+func (s *boardState) countCaptures(m moveInput) int {
+	captureCount, _ = 0, m
 	return captureCount
 }
 
 // TODO: use this function to get a (post-move) list of stonegroups.
-func (s boardState) getStoneGroups(m move) []stoneGroup {
+func (s *boardState) getStoneGroups(m moveInput) []stoneGroup {
+	return nil
+}
+
+// playMoveInput will play a moveInput, mutating the boardState and then adding the move to history.
+// If non-nil error is returned, no changes should be made.
+func (s *boardState) playMoveInput(input moveInput) error {
+	//TODO: first things first, verify that the move is not suicidal or ko.
+	m := move{
+		moveInput:    input,
+		capturesMade: s.countCaptures(input),
+	}
+	//TODO: do stuff to play the move (i.e. change the board state appropriately)
+	s.history.addMoveAndGroups(m)
+	if s.consecutivePasses >= 2 {
+		s.ongoing = false
+	}
 	return nil
 }

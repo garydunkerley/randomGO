@@ -6,7 +6,7 @@ import (
 
 func (x boardState) make_move(y int) {
 	var stoneColor int8
-	if x.white_to_move {
+	if x.whiteToMove {
 		stoneColor = 2
 	} else {
 		stoneColor = 1
