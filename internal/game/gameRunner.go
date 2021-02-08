@@ -147,6 +147,7 @@ func (gameState boardState) RunGame() {
 			fmt.Println(ok)
 			fmt.Println("Please try again.")
 		}
+		fmt.Println("The number of boardstates in the board history is:", len(game_state.board_history))
 	}
 	fmt.Println("Game over. You lose.") // a little bit rigged
 }
