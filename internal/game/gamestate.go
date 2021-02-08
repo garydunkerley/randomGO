@@ -1,154 +1,124 @@
 package game
 
-//TODO: this function is currently written to take an input node y,
-//check the global game state to get groups, and augment the same state with new groups.
-//It returns nothing.
-//Instead, we need to remove the global state modification (so no *stoneGroup things)
-//And we need to return all the stoneGroups (as a slice or a type)
-//Note also: the "get neighbors" functions will be modified to return slices of node IDs.
-//Formerly, they returned slices of node pointers.
+//TODO: Jobs for preparing a move.
+//	   1. From move input: compute captured/subsumed/new strings
+//DONE 2. Count captured stones. [used to track points]
+//DONE 3. Using this information, compute the set of all strings after the move.
+//			(This is tracked in history)
 
-//TODO: On the same note: please ensure that these functions do not change the global state.
-func modifyStonegroups(y *node) {
-	var friendlies []*node
-	var enemies []*node
+//TODO: Jobs for playing a move.
+// Data needed:
+// * The sets of all strings for each color, before the move was played.
+//		This is accessible via the last history entry.
+// * Captured and subsumed strings, as map[stoneString]bool
+// * The new string, as stoneString
+// 0. Copy the starting string information (chromaticStrings, from history)
+// 1. Remove all captured strings from the opponent's string set.
+// 2. Remove all subsumed strings from your own string set.
+// 3. Iterate over all nodes in the captured strings, set their color to 0.
 
-	var oldGroup *stoneString
-	var mergedGroup *stoneString
-
-	newStones := make(map[*node]bool)
-	newLibs := make(map[*node]bool)
-	newNodeLibs := getLiberties(y)
-
-	friendlies = getSameColorNeighbors(y)
-	enemies = getOppColorNeighbors(y)
-
-	if len(friendlies) > 0 {
-		// joins together neighboring friendly groups
-		mergedGroup = friendlies[0].group
-
-		for i := 0; i < len(friendlies); i++ {
-			oldGroup = friendlies[i].group
-			// set oldGroup to the group of the ith friendly node
-			for key := range oldGroup.liberties {
-				if key != y {
-					// foreach liberty of the old stone group, set it as
-					// a liberty of the new one
-					newLibs[key] = true
-				}
-			}
-
-			for key := range oldGroup.stones {
-				newStones[key] = true
-				key.inGroup = mergedGroup
-				// should change each of these nodes so that they now
-				// point to the group for y.
-			}
-
-		}
-		for _, key := range newNodeLibs {
-			newLibs[key] = true
-		}
-		newStones[y] = true
-
-		mergedGroup.stones = newStones // update the stones and liberties of y's group
-		mergedGroup.liberties = newLibs
-		y.group = mergedGroup
-	} else {
-		// if y is not next to any friendly stones
-		// make a group containing y
-		var newGroup stoneString
-		newStones[y] = true
-		for _, z := range getLiberties(y) {
-			newLibs[z] = true
-		}
-		newGroup.stones = newStones
-
-		newGroup.liberties = newLibs
-
-		y.group = &newGroup
-	}
-	if len(enemies) > 0 {
-		for _, z := range enemies {
-			delete(z.group.liberties, y)
-		}
-	}
-}
-
-// TODO: rewrite this into two functions:
-// 1. Find captured groups.
-// 2. Remove captured groups.
-
-// findCapt will return zero-liberty groups if the given (legal) move is played.
-func (x boardState) findCapt(id int, color int8) []stoneString {
-	//TODO
-	return nil
-}
-
-// countCapt will count the number of nodes in the given list.
+// countCaptures will count the number of nodes in the given map.
 // (used for scoring purposes)
-func countCapt(groups []stoneString) int {
+func countCaptures(capt map[stoneString]bool) int {
 	sum := 0
-	for _, group := range groups {
-		sum += len(group.stones)
+	for string_, _ := range capt {
+		sum += len(string_.stones)
 	}
 	return sum
 }
 
-// removeCaptGroups kills groups from boardState and empties the resp. node colors.
-// It assumes that the argument is a slice of monochrome groups.
-func (x boardState) removeCapt(groups []stoneString) {
-	if len(groups) == 0 {
-		return
+// computeNewString takes the subsumed strings and candidate move id,
+// then generates a new stoneString with the union of all of them
+func computeNewString(
+	id int,
+	subsumed map[stoneString]bool,
+) (new_ stoneString) {
+	new_.stones, new_.liberties = make(map[int]bool), make(map[int]bool)
+	new_.color = id.color
+	new_.stones[id] = true
+	if len(subsumed) == 0 { // Case: no friendly neighbors.
+		//TODO: new_.liberties should be the "get liberties" function for a single node
+		return new_
 	}
-	c := groups[0].color
-	lastGroups := x.history.groups[-1][c] // This is []stoneGroup of correct color
-	indices := []int
-	for _, group := range groups {
-		for _, id := range group.stones { // Set the nodes to empty.
-			x.nodes[id].color = 0
+	for string_, _ := range subsumed {
+		for stoneId, _ := range string_.stones { // Add all stones
+			new_.stones[stoneId] = true
 		}
-		idx, ok := findGroupIndex(lastGroups, val)
-		if ok {
-			indices := append(indices, idx)
-		}
-	}
-	//TODO: finish this by deleting all the given indices. Probably did this wrong.
-	return
-}
-
-// findGroupIndex checks if a slice of stoneGroups contains a given stoneGroup
-// and returns the index and a success bool
-func findGroupIndex(groups []*stoneString, val *stoneString) (int, bool) {
-	for i, item := range groups {
-		if item == val {
-			return i, true
+		for stoneId, _ := range string_.liberties {
+			// Add all liberties, will remove the candidate move as a liberty later
+			new_.liberties[stoneId] = true
+			// TODO: This does not account for liberties obtained after capturing.
+			// Perhaps add the captured strings as an argument? Not sure
 		}
 	}
-	return -1, false
+	delete(new_.liberties, id) //remove itself as a liberty
+	return new_
 }
 
-// deleteIndexedGroup removes the group at chosen index.
-func deleteIndexedGroup(groups []*stoneString, idx int) []*stoneString {
-	return append(groups[:idx], groups[idx+1:])
-}
-
-
-func (x boardState) removeDead(id int) {
-	enemies := getOppColorNeighbors(id)
-	if len(enemies) == 0 {
-		return nil
+// computeNextStrings take the current strings and all the deltas
+// and returns the strings for next turn, as a chromaticStrings object.
+// It removes captured strings from the opponent's side,
+// removes subsumed strings from your color.
+// and adds the new string to your color.
+func computeNextStrings(current chromaticStrings,
+	capt map[stoneString]bool,
+	subsumed map[stoneString]bool,
+	new_ stoneString,
+	moveColor int8,
+) (next chromaticStrings) {
+	var ownStrings map[stoneString]bool
+	var oppStrings map[stoneString]bool
+	if moveColor == 1 {
+		ownStrings = current.black
+		oppStrings = current.white
 	} else {
-		for i := 0; i < len(enemies); i++ {
-			if len(enemies[i].group.liberties) == 0 {
-				// if enemy group has no liberties
-				for z := range enemies[i].group.stones {
-					z.color = 0
-					// change all stones into empty nodes
-					delete(enemies[i].group.stones, z) // remove each stone from the map
-				}
-			}
+		ownStrings = current.white
+		oppStrings = current.black
+	}
+	for string_, _ := range capt {
+		delete(oppStrings, string_)
+	}
+	for string_, _ := range subsumed {
+		delete(ownStrings, string_)
+	}
+	ownStrings[new_] = true
+	// now give them the white/black labels
+	if moveColor == 1 {
+		next.black = ownStrings
+		next.white = oppStrings
+	} else {
+		next.black = oppStrings
+		next.white = ownStrings
+	}
+	return next
+}
+
+// boardUpdate modifies the boardState by a single move, as follows.
+// 1. Recolor the given node to the player's color.
+// 2. Captured stones are removed.
+// 3. The node groups are updated:
+// 3a. x.GoGraph.stringOf[newnode] = newString
+// 3b. x.GoGraph.stringOf[friendlyNodeInAdjacentGroup] = newString
+// 3c. delete(x.stringOf, enemyNodeInCapturedGroup)
+func (x *boardState) boardUpdate(
+	m move,
+	subsumed map[stoneString]bool,
+	capt map[stoneString]bool,
+	new_ stoneString,
+) {
+	x.nodes[m.id] = m.color // 1: add new stone
+	x.stringOf[m.id] = new_ // 3a: update stone group
+
+	for string_, _ := range capt {
+		for id, _ := range string_.stones {
+			x.nodes[id].color = 0  //2: remove captured stones
+			delete(x.stringOf, id) //3c: update captured stone group
 		}
 	}
-	return nil
+	for string_, _ := range subsumed {
+		for id, _ := range string_.stones {
+			x.stringOf[id] = new_ //3b: update subsumed stone group
+		}
+	}
+	return
 }

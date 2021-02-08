@@ -18,7 +18,7 @@ type stoneString struct {
 	color     int8         // color is 0 for empty, 1 for black, 2 for white
 }
 
-// chromaticStrings represents all stoneStrings of each color
+// chromaticStrings represents two sets of stoneStrings, one per color
 // Usage: ensure that the colors are copacetic.
 //   Each key G of chromaticStrings.black must satisfy G.color == 1
 //   (resp. chromaticStrings.white, G.color == 2)
@@ -37,7 +37,8 @@ type boardTop struct {
 
 // GoGraph contains a map of node ids to node pointers, and embeds boardTop
 type GoGraph struct {
-	nodes map[int]*node
+	nodes    map[int]*node
+	stringOf map[int]stoneString // Maps node ID to its containing string
 	boardTop
 }
 
@@ -153,7 +154,8 @@ func (s *boardState) playMoveInput(input moveInput) error {
 		capturesMade: countCapt(input),
 	}
 
-	// Save
+	//TODO: prepare the consequences of the move, then play it. See gamestate.go notes
+	//
 	s.history.addMoveAndGroups(m)
 
 	// Play
