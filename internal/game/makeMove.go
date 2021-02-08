@@ -1,19 +1,15 @@
 package game
 
-// makeMove attempts to play a move from valid nodeId.
-// TODO: verify thhat modifyStoneGroups works on IDs
-func (x boardState) makeMove(input moveInput) error {
-
-	err := checkLegalMove(input)
-	if err != nil {
-		return err
-	}
-
+// makeMove attempts to play the given legal move.
+// It is assumed that checkLegalMove returns no error.
+// TODO: verify that modifyStoneGroups works on IDs.
+// TODO: verify that removeDead works on IDs.
+func (x boardState) makeMove(input moveInput) {
 	stoneColor, id := input.id, input.playerColor
-	modifyStoneGroups(id)
-	x.removeDead(id)
-	modifyStoneGroups(id)
-	return nil
+	node, _ = x.nodes[id]
+	modifyStoneGroups(node)
+	x.removeDead(node)
+	modifyStoneGroups(node)
 	// I run modify_stoneGroups again to append any liberties resulting from stone groups dying
 	// TODO clean up this inefficiency
 }

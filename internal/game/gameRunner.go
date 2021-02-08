@@ -120,9 +120,8 @@ func promptNodeId(prompt promptui.Prompt, coo map[[2]int]int, nodeCount int) int
 	return -1
 }
 
-//TODO: initialize game function, boardtop > boardstate. Initialize history in this function.
-
-//RunGame expects an initialized boardState and runs a local CLI game.
+// RunGame expects an initialized boardState (GoGraph populated)
+// and runs a local CLI game.
 func (gameState boardState) RunGame() {
 	coo, nodeCount := gameState.coords, gameState.nodeCount
 	prompt := promptRect()

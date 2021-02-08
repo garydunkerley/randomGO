@@ -13,8 +13,8 @@ func modifyStonegroups(y *node) {
 	var friendlies []*node
 	var enemies []*node
 
-	var oldGroup *stoneGroup
-	var mergedGroup *stoneGroup
+	var oldGroup *stoneString
+	var mergedGroup *stoneString
 
 	newStones := make(map[*node]bool)
 	newLibs := make(map[*node]bool)
@@ -57,7 +57,7 @@ func modifyStonegroups(y *node) {
 	} else {
 		// if y is not next to any friendly stones
 		// make a group containing y
-		var newGroup stoneGroup
+		var newGroup stoneString
 		newStones[y] = true
 		for _, z := range getLiberties(y) {
 			newLibs[z] = true
@@ -75,9 +75,67 @@ func modifyStonegroups(y *node) {
 	}
 }
 
-func (x boardState) removeDead(y *node) {
-	var enemies []*node
-	enemies = getOppColorNeighbors(y)
+// TODO: rewrite this into two functions:
+// 1. Find captured groups.
+// 2. Remove captured groups.
+
+// findCapt will return zero-liberty groups if the given (legal) move is played.
+func (x boardState) findCapt(id int, color int8) []stoneString {
+	//TODO
+	return nil
+}
+
+// countCapt will count the number of nodes in the given list.
+// (used for scoring purposes)
+func countCapt(groups []stoneString) int {
+	sum := 0
+	for _, group := range groups {
+		sum += len(group.stones)
+	}
+	return sum
+}
+
+// removeCaptGroups kills groups from boardState and empties the resp. node colors.
+// It assumes that the argument is a slice of monochrome groups.
+func (x boardState) removeCapt(groups []stoneString) {
+	if len(groups) == 0 {
+		return
+	}
+	c := groups[0].color
+	lastGroups := x.history.groups[-1][c] // This is []stoneGroup of correct color
+	indices := []int
+	for _, group := range groups {
+		for _, id := range group.stones { // Set the nodes to empty.
+			x.nodes[id].color = 0
+		}
+		idx, ok := findGroupIndex(lastGroups, val)
+		if ok {
+			indices := append(indices, idx)
+		}
+	}
+	//TODO: finish this by deleting all the given indices. Probably did this wrong.
+	return
+}
+
+// findGroupIndex checks if a slice of stoneGroups contains a given stoneGroup
+// and returns the index and a success bool
+func findGroupIndex(groups []*stoneString, val *stoneString) (int, bool) {
+	for i, item := range groups {
+		if item == val {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
+// deleteIndexedGroup removes the group at chosen index.
+func deleteIndexedGroup(groups []*stoneString, idx int) []*stoneString {
+	return append(groups[:idx], groups[idx+1:])
+}
+
+
+func (x boardState) removeDead(id int) {
+	enemies := getOppColorNeighbors(id)
 	if len(enemies) == 0 {
 		return nil
 	} else {

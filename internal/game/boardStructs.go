@@ -7,19 +7,25 @@ type node struct {
 	name      string // deprecating unless there is a reason to care
 	id        int
 	neighbors []*node
-	color     int8       // color is 0 for empty, 1 for black, 2 for white
-	group     stoneGroup // is a part of a given stone group
+	color     int8        // color is 0 for empty, 1 for black, 2 for white
+	group     stoneString // is a part of a given stone group
 }
 
-// stoneGroup represents a contiguous string of stones.
-type stoneGroup struct {
+// stoneString represents a contiguous string of stones.
+type stoneString struct {
 	stones    map[int]bool // what stones are in here? Need to make all empty if group dies
 	liberties map[int]bool // what liberties does the group have
 	color     int8         // color is 0 for empty, 1 for black, 2 for white
 }
 
-// allGroups maps from color (1, 2) to all stoneGroups for that color.
-type allGroups map[int8][]stoneGroup
+// chromaticStrings represents all stoneStrings of each color
+// Usage: ensure that the colors are copacetic.
+//   Each key G of chromaticStrings.black must satisfy G.color == 1
+//   (resp. chromaticStrings.white, G.color == 2)
+type chromaticStrings struct {
+	black map[stoneString]bool
+	white map[stoneString]bool
+}
 
 // boardTop stores the information to construct a game board.
 type boardTop struct {
@@ -52,12 +58,12 @@ type status struct {
 // TODO: Zobrist hashing.
 // TODO: reconstruct a board state from a history object.
 type history struct {
-	moves             []move      // The move history does not store passes.
-	groups            []allGroups // Stores all groups. Does not update on passes.
-	moveCount         int         // The move count is incremented by passes.
-	consecutivePasses int         // Incremented by passes, reset to 0 by non-pass moves.
-	whitePoints       int         // Accumulated points for white (komi, if any, plus captures)
-	blackPoints       int         // Accumulated points for black (captures)
+	moves             []move             // The move history does not store passes.
+	allStoneStrings   []chromaticStrings // Stores all groups. Does not update on passes.
+	moveCount         int                // The move count is incremented by passes.
+	consecutivePasses int                // Incremented by passes, reset to 0 by non-pass moves.
+	whitePoints       int                // Accumulated points for white (komi, if any, plus captures)
+	blackPoints       int                // Accumulated points for black (captures)
 }
 
 // move is a moveInput and the associated number of captures made with the move
@@ -74,9 +80,10 @@ type moveInput struct {
 }
 
 // addMoveAndGroups updates a history with the given move and computed group slice.
-// It does not check legality of the move.
-// Called by playMove.
+// It is assumed that the move is a legal move, and it is not a pass.
+// It does not check legality of the move. Called by playMove.
 func (h *history) addMoveAndGroups(m move) {
+	//TODO change g to return the chromaticStrings resulting from move
 	g := getStoneGroups(m.moveInput)
 	h.moveCount++
 	if m.isPass {
@@ -93,19 +100,23 @@ func (h *history) addMoveAndGroups(m move) {
 		}
 	}
 	h.moves = append(h.moves, m) // don't update moves or groups on pass
-	h.groups = append(h.groups, g)
+	h.allStoneStrings = append(h.allStoneStrings, g)
 	h.consecutivePasses = 0
 }
 
 // TODO: use this function to count how many stones are captured by the given move.
+// TODO: merge with gamestate.go code.
 // Can assume the move is legal.
+/*
 func (s *boardState) countCaptures(m moveInput) int {
 	captureCount, _ = 0, m
 	return captureCount
 }
+*/
 
-// TODO: use this function to get a (post-move) list of stonegroups.
-func (s *boardState) getStoneGroups(m moveInput) []stoneGroup {
+// TODO: use this function to get a (post-move) list of stoneStrings.
+// TODO: merge with gamestate.Go code.
+func (s *boardState) getStoneStrings(m moveInput) []stoneString {
 	return nil
 }
 
@@ -113,19 +124,39 @@ func (s *boardState) getStoneGroups(m moveInput) []stoneGroup {
 // board state.
 // NOTE: If non-nil error is returned, no changes should be made to global state.
 func (s *boardState) playMoveInput(input moveInput) error {
-	m := move{
-		moveInput:    input,
-		capturesMade: s.countCaptures(input),
-	}
-
-	err := makeMove(m)
+	// Check legality
+	err := checkLegalMove(input.id, input.playerColor)
 	if err != nil {
 		return err
 	}
-	//TODO: do stuff to play the move (i.e. change the board state appropriately)
-	s.history.addMoveAndGroups(m)
-	if s.consecutivePasses >= 2 {
-		s.ongoing = false
+
+	// Check pass
+	if input.isPass {
+		s.history.consecutivePasses++
+		s.history.moveCount++
+		if s.consecutivePasses >= 2 {
+			s.ongoing = false
+		}
+		return nil
 	}
+
+	//TODO: * Find captured groups.
+	//		* Count the relevant number of stones.
+	//		* Use the capture count to construct the move.
+	//Abstract those as one function: "getGroupsAndMove(moveinput)"
+	//Then:
+	//		Invoke addMoveAndGroups to save new history
+	//		Play move (should not depend on history)
+
+	m := move{
+		moveInput:    input,
+		capturesMade: countCapt(input),
+	}
+
+	// Save
+	s.history.addMoveAndGroups(m)
+
+	// Play
+	s.makeMove(input)
 	return nil
 }

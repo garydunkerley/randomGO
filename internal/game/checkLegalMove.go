@@ -64,7 +64,5 @@ func (y boardState) suicidalMove(n int, c int8) bool {
 }
 
 func (y boardState) illegal_ko_move(n int) bool {
-	// Need to modify y.board_history so that it stores encodings of the board states
-
 	return false
 }
