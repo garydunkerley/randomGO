@@ -1,7 +1,8 @@
 package game
 
+// getOppColor(2)=1, getOppColor(1)=2
 func getOppColor(color int8) int {
-	return (color + 1) % 2
+	return 3 - color
 }
 
 // getSubsumedStrings gives us a map encoding the stoneStrings that need to be subsumed into a larger stoneString given a play at nodeId of a given color
