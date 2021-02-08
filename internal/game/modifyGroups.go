@@ -50,6 +50,28 @@ func (G GoGraph) getCapturedStrings(nodeId int, color int8) map[stoneString]bool
 		}
 	}
 	return capturedStrings
+
+}
+
+// assignLibertiesFromCapture takes each captured group and looks at its stones. If a given stone has a neighbor of the opposite color, then we append the nodeid of the captured stone to a list associated with the stoneString of the enemy neighbor
+func assignLibertiesFromCapture(capt map[stoneString]bool) map[stoneString][]int {
+	giveCaptorLib := make(map[stoneString][]int)
+
+	var captors []int
+	// for each captured group
+	for key := range capt {
+		// and for each stone in this captured group
+		for captive := range key.stones {
+			// look at its enemy neighbors
+			captors = getOppColorNeighbors(captive)
+			// if there are any, append the nodeid of the captive
+			// to the list of new liberties for the stoneString of the enemy neighbor
+			for z := range captors {
+				giveCaptorLib[ofString(z.id)] = append(giveCaptorLib[ofString(z.id)], captive.id)
+			}
+		}
+	}
+	return giveCaptorLib
 }
 
 func countCaptures(capt map[stoneString]bool) int {
