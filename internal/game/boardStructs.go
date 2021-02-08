@@ -110,6 +110,7 @@ func (s *boardState) getStoneGroups(m moveInput) []stoneGroup {
 // If non-nil error is returned, no changes should be made.
 func (s *boardState) playMoveInput(input moveInput) error {
 	//TODO: first things first, verify that the move is not suicidal or ko.
+
 	m := move{
 		moveInput:    input,
 		capturesMade: s.countCaptures(input),

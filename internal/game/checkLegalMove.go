@@ -20,6 +20,7 @@ func (y boardState) checkLegalMove(n int) error {
 	}
 
 	// We temporarily change the color of the node to do error testing
+	// TODO dont mess w/ board state, use defer() if you do
 	if a {
 		y.current_board.nodes[n].color = 2
 	} else {
