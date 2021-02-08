@@ -1,30 +1,29 @@
 package game
 
 import (
+	"errors"
 	"fmt"
 )
 
-func (x boardState) make_move(y int) {
-	var stoneColor int8
-	if x.whiteToMove {
-		stoneColor = 2
-	} else {
-		stoneColor = 1
-	}
-	node, ok := x.current_board.nodes[y]
+// Attempts to play a move from valid nodeId.
+func (x boardState) makeMove(input moveInput) error {
+	stoneColor, id := input.id, input.playerColor
+	node, ok := x.nodes[id]
 	if !ok {
-		error_message := fmt.Sprintf("Node %d not found!", y)
-		panic(error_message)
+		errorMsg := fmt.Sprintf("Node %d not found!", id)
+		return errors.New(errorMsg)
+	} else if node.color != 0 {
+		return errors.New("A stone is already there!")
 	}
-	node.color = stoneColor
-	modify_stoneGroups(x.current_board.nodes[y])
-	x.remove_dead(x.current_board.nodes[y])
-	modify_stoneGroups(x.current_board.nodes[y])
+	modifyStoneGroups(x.nodes[id])
+	x.removeDead(x.nodes[id])
+	modifyStoneGroups(x.nodes[id])
+	return nil
 	// I run modify_stoneGroups again to append any liberties resulting from stone groups dying
 	// TODO clean up this inefficiency
 }
 
-func contains_val(slice []*node, val *node) bool {
+func containsVal(slice []*node, val *node) bool {
 	for _, item := range slice {
 		if item == val {
 			return true

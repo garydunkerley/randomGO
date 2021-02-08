@@ -1,8 +1,9 @@
 package game
 
 // this script combines the get_same_color and get_opp_color functions from the original script.
+// TODO: change these functions to return slices of node IDs, instead of slices of node pointers.
 
-func get_same_color_neighbors(x *node) []*node {
+func getSameColorNeighbors(x *node) []*node {
 	var friends []*node
 	if x.color == 0 {
 		return friends
@@ -15,7 +16,7 @@ func get_same_color_neighbors(x *node) []*node {
 	return friends
 }
 
-func get_opp_color_neighbors(x *node) []*node {
+func getOppColorNeighbors(x *node) []*node {
 	var enemies []*node
 	if x.color == 0 {
 		return enemies
@@ -28,7 +29,7 @@ func get_opp_color_neighbors(x *node) []*node {
 	return enemies
 }
 
-func get_liberties(x *node) []*node {
+func getLiberties(x *node) []*node {
 	var liberties []*node
 	if x.color == 0 {
 		return liberties

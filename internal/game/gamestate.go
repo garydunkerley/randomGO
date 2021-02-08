@@ -1,27 +1,36 @@
 package game
 
-func modify_stoneGroups(y *node) {
+//TODO: this function is currently written to take an input node y,
+//check the global game state to get groups, and augment the same state with new groups.
+//It returns nothing.
+//Instead, we need to remove the global state modification (so no *stoneGroup things)
+//And we need to return all the stoneGroups (as a slice or a type)
+//Note also: the "get neighbors" functions will be modified to return slices of node IDs.
+//Formerly, they returned slices of node pointers.
+
+//TODO: On the same note: please ensure that these functions do not change the global state.
+func modifyStonegroups(y *node) {
 	var friendlies []*node
 	var enemies []*node
 
-	var old_Group *stoneGroup
-	var merged_Group *stoneGroup
+	var oldGroup *stoneGroup
+	var mergedGroup *stoneGroup
 
 	newStones := make(map[*node]bool)
 	newLibs := make(map[*node]bool)
-	newNodeLibs := get_liberties(y)
+	newNodeLibs := getLiberties(y)
 
-	friendlies = get_same_color_neighbors(y)
-	enemies = get_opp_color_neighbors(y)
+	friendlies = getSameColorNeighbors(y)
+	enemies = getOppColorNeighbors(y)
 
 	if len(friendlies) > 0 {
 		// joins together neighboring friendly groups
-		merged_Group = friendlies[0].inGroup
+		mergedGroup = friendlies[0].inGroup
 
 		for i := 0; i < len(friendlies); i++ {
-			old_Group = friendlies[i].inGroup
-			// set old_Group to the group of the ith friendly node
-			for key := range old_Group.liberties {
+			oldGroup = friendlies[i].inGroup
+			// set oldGroup to the group of the ith friendly node
+			for key := range oldGroup.liberties {
 				if key != y {
 					// foreach liberty of the old stone group, set it as
 					// a liberty of the new one
@@ -29,9 +38,9 @@ func modify_stoneGroups(y *node) {
 				}
 			}
 
-			for key := range old_Group.stones {
+			for key := range oldGroup.stones {
 				newStones[key] = true
-				key.inGroup = merged_Group
+				key.inGroup = mergedGroup
 				// should change each of these nodes so that they now
 				// point to the group for y.
 			}
@@ -42,22 +51,22 @@ func modify_stoneGroups(y *node) {
 		}
 		newStones[y] = true
 
-		merged_Group.stones = newStones // update the stones and liberties of y's group
-		merged_Group.liberties = newLibs
-		y.inGroup = merged_Group
+		mergedGroup.stones = newStones // update the stones and liberties of y's group
+		mergedGroup.liberties = newLibs
+		y.inGroup = mergedGroup
 	} else {
 		// if y is not next to any friendly stones
 		// make a group containing y
-		var new_group stoneGroup
+		var newGroup stoneGroup
 		newStones[y] = true
-		for _, z := range get_liberties(y) {
+		for _, z := range getLiberties(y) {
 			newLibs[z] = true
 		}
-		new_group.stones = newStones
+		newGroup.stones = newStones
 
-		new_group.liberties = newLibs
+		newGroup.liberties = newLibs
 
-		y.inGroup = &new_group
+		y.inGroup = &newGroup
 	}
 	if len(enemies) > 0 {
 		for _, z := range enemies {
@@ -66,9 +75,9 @@ func modify_stoneGroups(y *node) {
 	}
 }
 
-func (x boardState) remove_dead(y *node) error {
+func (x boardState) removeDead(y *node) {
 	var enemies []*node
-	enemies = get_opp_color_neighbors(y)
+	enemies = getOppColorNeighbors(y)
 	if len(enemies) == 0 {
 		return nil
 	} else {
