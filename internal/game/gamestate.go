@@ -5,17 +5,7 @@ package game
 //DONE 2. Count captured stones. [used to track points]
 //DONE 3. Using this information, compute the set of all strings after the move.
 //			(This is tracked in history)
-
-//TODO: Jobs for playing a move.
-// Data needed:
-// * The sets of all strings for each color, before the move was played.
-//		This is accessible via the last history entry.
-// * Captured and subsumed strings, as map[stoneString]bool
-// * The new string, as stoneString
-// 0. Copy the starting string information (chromaticStrings, from history)
-// 1. Remove all captured strings from the opponent's string set.
-// 2. Remove all subsumed strings from your own string set.
-// 3. Iterate over all nodes in the captured strings, set their color to 0.
+//Essentially done: playing the move.
 
 // countCaptures will count the number of nodes in the given map.
 // (used for scoring purposes)
@@ -92,6 +82,8 @@ func computeNextStrings(current chromaticStrings,
 	}
 	return next
 }
+
+// Jobs for playing a move.
 
 // boardUpdate modifies the boardState by a single move, as follows.
 // 1. Recolor the given node to the player's color.
