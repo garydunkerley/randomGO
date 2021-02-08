@@ -8,7 +8,7 @@ type node struct {
 	id        int
 	neighbors []*node
 	color     int8        // color is 0 for empty, 1 for black, 2 for white
-	group     stoneString // is a part of a given stone group
+	group     stoneString // deprecating: is a part of a given stone group
 }
 
 // stoneString represents a contiguous string of stones.
@@ -29,10 +29,10 @@ type chromaticStrings struct {
 
 // boardTop stores the information to construct a game board.
 type boardTop struct {
-	edges        map[int][]int
-	nodeCount    int            // We have node ids in the range [0, nodeCount - 1]
-	coords       map[[2]int]int // optional, for boards with nice 2d representations
-	coord_bounds []int          // optional, for example, [9,9] for a 9 by 9 board
+	edges       map[int][]int
+	nodeCount   int            // We have node ids in the range [0, nodeCount - 1]
+	coords      map[[2]int]int // optional, for boards with nice 2d representations
+	coordBounds []int          // optional, for example, [9,9] for a 9 by 9 board
 }
 
 // GoGraph contains a map of node ids to node pointers, and embeds boardTop

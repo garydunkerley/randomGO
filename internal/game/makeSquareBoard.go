@@ -13,7 +13,7 @@ func MakeSquareBoard(n int, m int) boardTop {
 	coords := make(map[[2]int]int)
 
 	ourTopology.nodeCount = n * m
-	ourTopology.coord_bounds = []int{m, n}
+	ourTopology.coordBounds = []int{m, n}
 
 	for i := 0; i < n; i++ {
 		for j := 0; j < m; j++ {
