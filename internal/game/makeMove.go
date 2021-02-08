@@ -5,7 +5,8 @@ import (
 	"fmt"
 )
 
-// Attempts to play a move from valid nodeId.
+// makeMove attempts to play a move from valid nodeId.
+// TODO: Returns non-nil error if the given node is already colored, move to checkLegalMove
 func (x boardState) makeMove(input moveInput) error {
 	stoneColor, id := input.id, input.playerColor
 	node, ok := x.nodes[id]
@@ -23,6 +24,7 @@ func (x boardState) makeMove(input moveInput) error {
 	// TODO clean up this inefficiency
 }
 
+// containsVal checks if a slice of *nodes contains a given *node.
 func containsVal(slice []*node, val *node) bool {
 	for _, item := range slice {
 		if item == val {

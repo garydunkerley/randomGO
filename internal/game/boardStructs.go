@@ -52,12 +52,12 @@ type status struct {
 // TODO: Zobrist hashing.
 // TODO: reconstruct a board state from a history object.
 type history struct {
-	moves             []move         // The move history does not store passes.
-	groups            [][]stoneGroup // Stores all groups. Does not update on passes.
-	moveCount         int            // The move count is incremented by passes.
-	consecutivePasses int            // Incremented by passes, reset to 0 by non-pass moves.
-	whitePoints       int            // Accumulated points for white (komi, if any, plus captures)
-	blackPoints       int            // Accumulated points for black (captures)
+	moves             []move      // The move history does not store passes.
+	groups            []allGroups // Stores all groups. Does not update on passes.
+	moveCount         int         // The move count is incremented by passes.
+	consecutivePasses int         // Incremented by passes, reset to 0 by non-pass moves.
+	whitePoints       int         // Accumulated points for white (komi, if any, plus captures)
+	blackPoints       int         // Accumulated points for black (captures)
 }
 
 // move is a moveInput and the associated number of captures made with the move
@@ -109,14 +109,18 @@ func (s *boardState) getStoneGroups(m moveInput) []stoneGroup {
 	return nil
 }
 
-// playMoveInput will play a moveInput, mutating the boardState and then adding the move to history.
-// If non-nil error is returned, no changes should be made.
+// playMoveInput will play a moveInput, changing the history and then mutating
+// board state.
+// NOTE: If non-nil error is returned, no changes should be made to global state.
 func (s *boardState) playMoveInput(input moveInput) error {
-	//TODO: first things first, verify that the move is not suicidal or ko.
-
 	m := move{
 		moveInput:    input,
 		capturesMade: s.countCaptures(input),
+	}
+
+	err := makeMove(m)
+	if err != nil {
+		return err
 	}
 	//TODO: do stuff to play the move (i.e. change the board state appropriately)
 	s.history.addMoveAndGroups(m)
