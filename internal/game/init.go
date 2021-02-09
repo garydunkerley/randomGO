@@ -13,7 +13,7 @@ func (a boardTop) initGraph() GoGraph {
 		nodes:    nodes,
 		boardTop: a,
 	}
-	for i := 0; i < a.node_count; i++ {
+	for i := 0; i < a.nodeCount; i++ {
 		for z := range a.edges[i] {
 			nodes[i].neighbors = append(nodes[i].neighbors, nodes[z])
 		}
@@ -32,6 +32,6 @@ func initNode(i int) *node {
 
 // initBoardState initializes a board state with empty history,
 // black to move, game not ongoing.
-func initBoardState(boardTop) boardState {
-	return boardState{GoGraph: boardTop.initGraph()}
+func initBoardState(a boardTop) boardState {
+	return boardState{GoGraph: a.initGraph()}
 }

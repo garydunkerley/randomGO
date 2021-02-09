@@ -39,7 +39,7 @@ func (x boardState) checkLegalMove(n int, c int8) error {
 // of the given color.
 func (y boardState) suicidalMove(n int, c int8) bool {
 
-	for _, z := range y.current_board.nodes[n].neighbors {
+	for _, z := range y.nodes[n].neighbors {
 		if z.color == 0 {
 			// if the stone being played has a liberty,
 			// it won't be regarded as a suicidal move.
@@ -47,10 +47,10 @@ func (y boardState) suicidalMove(n int, c int8) bool {
 		} else if z.color != c {
 			// if a stone is played in the last liberty of an enemy group,
 			// it is not a suicide
-			if len(z.inGroup.liberties) == 1 {
+			if len(y.stringOf[z.id].liberties) == 1 {
 				return false
 			}
-		} else if len(z.inGroup.liberties) > 1 {
+		} else if len(y.stringOf[z.id].liberties) > 1 {
 			// if an adjacent friendly group has at least two liberties,
 			// it is not a suicide
 			return false
@@ -63,6 +63,7 @@ func (y boardState) suicidalMove(n int, c int8) bool {
 	return true
 }
 
-func (y boardState) illegal_ko_move(n int) bool {
+//illegal_ko_move will eventually check for ko
+func (y boardState) illegal_ko_move(n int, c int8) bool {
 	return false
 }

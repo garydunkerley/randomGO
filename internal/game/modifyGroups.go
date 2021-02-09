@@ -11,7 +11,7 @@ package game
 // (used for scoring purposes)
 
 // getOppColor(2)=1, getOppColor(1)=2
-func getOppColor(color int8) int {
+func getOppColor(color int8) int8 {
 	return 3 - color
 }
 
@@ -21,13 +21,13 @@ func getOppColor(color int8) int {
 func (G GoGraph) getSubsumedStrings(nodeId int, color int8) map[stoneString]bool {
 	stringsToBeMerged := make(map[stoneString]bool)
 	var friendlies []int
-	for z := range G.nodes[nodeId].neighbors {
+	for _, z := range G.nodes[nodeId].neighbors {
 		if z.color == color {
 			friendlies = append(friendlies, z.id)
 		}
 	}
-	for z := range friendlies {
-		stringsToBeMerged[G.stringOf(z)] = true
+	for _, z := range friendlies {
+		stringsToBeMerged[G.stringOf[z]] = true
 	}
 	return stringsToBeMerged
 }
@@ -38,15 +38,15 @@ func (G GoGraph) getCapturedStrings(nodeId int, color int8) map[stoneString]bool
 	capturedStrings := make(map[stoneString]bool)
 	var potentialCaptives []int
 
-	for z := range G.nodes[nodeId].neighbors {
+	for _, z := range G.nodes[nodeId].neighbors {
 		if z.color == getOppColor(color) {
 			potentialCaptives = append(potentialCaptives, z.id)
 		}
 	}
 
-	for z := range potentialCaptives {
-		if len(G.stringOf(z).liberties) == 1 {
-			capturedStrings[G.stringOf(z)] = true
+	for _, z := range potentialCaptives {
+		if len(G.stringOf[z].liberties) == 1 {
+			capturedStrings[G.stringOf[z]] = true
 		}
 	}
 	return capturedStrings
@@ -55,7 +55,7 @@ func (G GoGraph) getCapturedStrings(nodeId int, color int8) map[stoneString]bool
 // countCaptures returns the number of captured stones.
 func countCaptures(capt map[stoneString]bool) int {
 	sum := 0
-	for string_, _ := range capt {
+	for string_ := range capt {
 		sum += len(string_.stones)
 	}
 	return sum
@@ -66,17 +66,19 @@ func countCaptures(capt map[stoneString]bool) int {
 // append the nodeid of the captured stone to a list
 // associated with the stoneString of the enemy neighbor.
 // Wrapped by getNewStringData.
-func findCapturedLiberties(capt map[stoneString]bool) map[stoneString][]int {
+func (G GoGraph) findCapturedLiberties(capt map[stoneString]bool) map[stoneString][]int {
 	capturedLiberties := make(map[stoneString][]int)
 	var captors []int
 	// for each captured group
 	for key := range capt { // and for each stone in this captured group
-		for captive := range key.stones { // look at its enemy neighbors
+		for id := range key.stones { // look at its enemy neighbors
+			captive := G.nodes[id]
 			captors = getOppColorNeighbors(captive)
 			// if there are any, append the nodeid of the captive
 			// to the list of new liberties for the stoneString of the enemy neighbor
-			for z := range captors {
-				capturedLiberties[ofString(z.id)] = append(capturedLiberties[ofString(z.id)], captive.id)
+			for _, cid := range captors {
+				capturedLiberties[G.stringOf[cid]] = append(
+					capturedLiberties[G.stringOf[cid]], captive.id)
 			}
 		}
 	}
@@ -110,11 +112,11 @@ func (G GoGraph) findNewStringOf(capturedLiberties map[stoneString][]int) (
 func (G GoGraph) computeNewString(id int,
 	subsumed map[stoneString]bool) (new_ stoneString) {
 	new_.stones, new_.liberties = make(map[int]bool), make(map[int]bool)
-	new_.color = id.color
+	new_.color = G.nodes[id].color
 	new_.stones[id] = true
 	if len(subsumed) == 0 { // Case: no friendly neighbors.
 		for libID := range getLiberties(G.nodes[id]) {
-			new_.liberties[libID] = True
+			new_.liberties[libID] = true
 		}
 		return new_
 	}
@@ -138,13 +140,13 @@ func (G GoGraph) computeNewString(id int,
 func (G GoGraph) getNewStringData(
 	capt map[stoneString]bool,
 	subsumed map[stoneString]bool,
-	m move_input) (newString stoneString, newStringOf map[int]stoneString) {
+	m moveInput) (newString stoneString, newStringOf map[int]stoneString) {
 	defer func() {
-		x.nodes[m.id] = 0
+		G.nodes[m.id] = 0
 	}()
-	x.nodes[m.id] = m.playerColor //temporarily color a node
-	newStringOf = G.findNewStringOf(findCapturedLiberties(capt))
-	newString = computeNewString(m.id, subsumed)
+	G.nodes[m.id] = m.playerColor //temporarily color a node
+	newStringOf = G.findNewStringOf(G.findCapturedLiberties(capt))
+	newString = G.computeNewString(m.id, subsumed)
 	return newString, newStringOf
 }
 
@@ -196,8 +198,8 @@ func (x *boardState) boardUpdate(m move,
 	subsumed map[stoneString]bool,
 	capt map[stoneString]bool,
 	new_ stoneString) {
-	x.nodes[m.id] = m.color // 1: add new stone
-	x.stringOf[m.id] = new_ // 3a: update stone group
+	x.nodes[m.id] = m.playerColor // 1: add new stone
+	x.stringOf[m.id] = new_       // 3a: update stone group
 
 	for string_ := range capt {
 		for id := range string_.stones {

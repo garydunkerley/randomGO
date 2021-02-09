@@ -142,11 +142,10 @@ func (gameState boardState) RunGame() {
 		}
 		//The next moveInput is fully populated.
 
-		if ok := gameState.playMoveInput(next); !ok { //print error if any
-			fmt.Println(ok)
+		if err := gameState.playMoveInput(next); err != nil {
+			fmt.Println(err)
 			fmt.Println("Please try again.")
 		}
-		fmt.Println("The number of boardstates in the board history is:", len(game_state.board_history))
 	}
 	fmt.Println("Game over. You lose.") // a little bit rigged
 }

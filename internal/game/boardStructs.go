@@ -108,7 +108,7 @@ func (h *history) addMoveAndStrings(m move, C chromaticStrings) {
 // NOTE: If non-nil error is returned, no changes should be made to global state.
 func (s *boardState) playMoveInput(input moveInput) error {
 	// Check legality
-	err := checkLegalMove(input.id, input.playerColor)
+	err := s.checkLegalMove(input.id, input.playerColor)
 	if err != nil {
 		return err
 	}
@@ -124,21 +124,23 @@ func (s *boardState) playMoveInput(input moveInput) error {
 	}
 
 	nodeID, color := input.id, input.playerColor
-	subsumed := getSubsumedStrings(nodeID, color)
-	capt := getCapturedStrings(nodeID, color)
+	subsumed := s.getSubsumedStrings(nodeID, color)
+	capt := s.getCapturedStrings(nodeID, color)
 	//Note that the liberties of these strings do not account for captures yet.
 	//It's just the old strings, before the move is played.
+	newString, newStringOf := s.getNewStringData(capt, subsumed, input)
+
 	m := move{
 		moveInput:    input,
 		capturesMade: countCaptures(capt),
 	}
-	newString, newStringOf := s.getNewStringData(capt, subsumed)
 
 	// Store the info as a chromaticStrings object
 	var last chromaticStrings
-	if len(s.allStoneStrings) != 0 {
-		lastChromaticStrings := s.allStoneStrings[-1]
+	if L := len(s.allStoneStrings); L != 0 {
+		lastChromaticStrings := s.allStoneStrings[L-1]
 	}
+
 	// For computeNextStrings to be accurate, newString should have accurate liberties.
 	// capt and subsumed need only have correct stones.
 	// FIXME: There is probably going to be some bug with liberties here.

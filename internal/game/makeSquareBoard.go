@@ -1,10 +1,5 @@
 package game
 
-import (
-	"fmt"
-	"strconv"
-)
-
 func MakeSquareBoard(n int, m int) boardTop {
 
 	var ourTopology boardTop
@@ -18,7 +13,7 @@ func MakeSquareBoard(n int, m int) boardTop {
 	for i := 0; i < n; i++ {
 		for j := 0; j < m; j++ {
 
-			coords[[]int{i, j}] = i*n + j
+			coords[[2]int{i, j}] = i*n + j
 
 			if j != 0 { // add left node if it exists
 				edges[(i*n)+j] = append(edges[i*n+j], i*n+j-1)

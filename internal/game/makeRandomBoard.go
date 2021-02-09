@@ -12,15 +12,15 @@ func makeRandomBoard(n int, prob float64) boardTop {
 
 	edges := make(map[int][]int)
 
-	ourTopology.node_count = n
+	ourTopology.nodeCount = n
 
-	for i = 0; i < n; i++ {
+	for i := 0; i < n; i++ {
 		if i < n-1 {
 			edges[i] = append(edges[i], i+1)
 
 			for j := i + 2; j < n; j++ {
 				rand.Seed(time.Now().UnixNano())
-				v = rand.Float64
+				v := rand.Float64()
 
 				if v < prob {
 					edges[i] = append(edges[i], j)
