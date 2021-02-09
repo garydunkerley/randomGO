@@ -35,7 +35,7 @@ type boardTop struct {
 	coordBounds []int          // optional, for example, [9,9] for a 9 by 9 board
 }
 
-// GoGraph contains a map of node ids to node pointers, and embeds boardTop
+// GoGraph holds board topology and maps node IDs to their strings and *nodes.
 type GoGraph struct {
 	nodes    map[int]*node
 	stringOf map[int]stoneString // Maps node ID to its containing string
@@ -80,12 +80,10 @@ type moveInput struct {
 	isPass      bool // True if the player passed. Intentional redundancy: if node ID is -1, isPass is true.
 }
 
-// addMoveAndGroups updates a history with the given move and computed group slice.
+// addMoveAndStrings updates a history with the given move and computed group slice.
 // It is assumed that the move is a legal move, and it is not a pass.
-// It does not check legality of the move. Called by playMove.
-func (h *history) addMoveAndGroups(m move) {
-	//TODO change g to return the chromaticStrings resulting from move
-	g := getStoneGroups(m.moveInput)
+// It does not check legality of the move. Called by playMoveInput.
+func (h *history) addMoveAndStrings(m move, C chromaticStrings) {
 	h.moveCount++
 	if m.isPass {
 		h.consecutivePasses++
@@ -101,24 +99,8 @@ func (h *history) addMoveAndGroups(m move) {
 		}
 	}
 	h.moves = append(h.moves, m) // don't update moves or groups on pass
-	h.allStoneStrings = append(h.allStoneStrings, g)
+	h.allStoneStrings = append(h.allStoneStrings, C)
 	h.consecutivePasses = 0
-}
-
-// TODO: use this function to count how many stones are captured by the given move.
-// TODO: merge with gamestate.go code.
-// Can assume the move is legal.
-/*
-func (s *boardState) countCaptures(m moveInput) int {
-	captureCount, _ = 0, m
-	return captureCount
-}
-*/
-
-// TODO: use this function to get a (post-move) list of stoneStrings.
-// TODO: merge with gamestate.Go code.
-func (s *boardState) getStoneStrings(m moveInput) []stoneString {
-	return nil
 }
 
 // playMoveInput will play a moveInput, changing the history and then mutating
@@ -141,24 +123,30 @@ func (s *boardState) playMoveInput(input moveInput) error {
 		return nil
 	}
 
-	//TODO: * Find captured groups.
-	//		* Count the relevant number of stones.
-	//		* Use the capture count to construct the move.
-	//Abstract those as one function: "getGroupsAndMove(moveinput)"
-	//Then:
-	//		Invoke addMoveAndGroups to save new history
-	//		Play move (should not depend on history)
-
+	nodeID, color := input.id, input.playerColor
+	subsumed := getSubsumedStrings(nodeID, color)
+	capt := getCapturedStrings(nodeID, color)
+	//Note that the liberties of these strings do not account for captures yet.
+	//It's just the old strings, before the move is played.
 	m := move{
 		moveInput:    input,
-		capturesMade: countCapt(input),
+		capturesMade: countCaptures(capt),
 	}
+	newString, newStringOf := s.getNewStringData(capt, subsumed)
 
-	//TODO: prepare the consequences of the move, then play it. See gamestate.go notes
-	//
-	s.history.addMoveAndGroups(m)
+	// Store the info as a chromaticStrings object
+	var last chromaticStrings
+	if len(s.allStoneStrings) != 0 {
+		lastChromaticStrings := s.allStoneStrings[-1]
+	}
+	// For computeNextStrings to be accurate, newString should have accurate liberties.
+	// capt and subsumed need only have correct stones.
+	// FIXME: There is probably going to be some bug with liberties here.
+	// Be sure to test cases where a single stone kills a string, or when a group kills a string.
+	next := computeNextStrings(last, capt, subsumed, newString, m.playerColor)
 
-	// Play
-	s.makeMove(input)
+	s.history.addMoveAndStrings(m, next)
+
+	s.boardUpdate(m, subsumed, capt, newString)
 	return nil
 }
