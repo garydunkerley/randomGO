@@ -74,20 +74,23 @@ func findCapturedLiberties(capt map[stoneString]bool) map[stoneString][]int {
 	return capturedLiberties
 }
 
-// updateCapturedLiberties updates all liberties in the game state
-// It takes the output of findCapturedLiberties, which is in the form
+// findNewStringOf returns an updated map[int]stoneString,
+// intended to populate the next GoGraph.stringOf field.
+// It expects the output of findCapturedLiberties, which is in the form
 // map[string which needs added liberties] == liberties to add
-func (G GoGraph) updateCapturedLiberties(capturedLiberties map[stoneString][]int) {
+func (G GoGraph) findNewStringOf(capturedLiberties map[stoneString][]int,
+) (newStringOf map[int]stoneString) {
+	newStringOf = G.stringOf
 	for str, libs := range capturedLiberties {
 		newLiberties := str.liberties
 		for lib := range libs {
 			newLiberties[lib] = true
 		}
 		for stoneId := range str.stones { //update group for each node in this group
-			G.stringOf[stoneId].liberties = newLiberties
+			newStringOf[stoneId].liberties = newLiberties
 		}
 	}
-	return
+	return newStringOf
 }
 
 // countCaptures returns the number of captured stones.
