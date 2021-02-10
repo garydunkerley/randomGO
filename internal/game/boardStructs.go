@@ -14,7 +14,7 @@ type node struct {
 // stoneString represents a contiguous string of stones.
 type stoneString struct {
 	stones    map[int]bool // what stones are in here? Need to make all empty if group dies
-	liberties map[int]bool // what liberties does the group have
+	liberties map[int]bool // deprecating: we have decided just to compute liberties as needed.
 	color     int8         // color is 0 for empty, 1 for black, 2 for white
 }
 
