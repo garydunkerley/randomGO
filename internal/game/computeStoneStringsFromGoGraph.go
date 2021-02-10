@@ -10,14 +10,12 @@ func initStoneString(someStones map[int]bool) stoneString {
 }
 
 func (G GoGraph) computeStoneStrings() {
-	var newStoneString stoneString
 
 	anEmptyMap := make(map[int]bool)
 
 	for node := range G.nodes {
 		// once you find a colored node
 		if node.color != 0 {
-
 			// if it does not already belong to a stoneString
 			if G.stringOf[node.id] == nil {
 
@@ -49,7 +47,7 @@ func (G GoGraph) computeStoneStrings() {
 						// append the neighbors of x to a list
 						// corresponding to all stones the
 						// next layer after the current one
-						for y := range sameColorNeighbors(x) {
+						for y := range sameColorNeighbors(G.nodes[x]) {
 
 							// if a given same color neighbor of x
 							// is not already in a group
@@ -61,7 +59,7 @@ func (G GoGraph) computeStoneStrings() {
 
 					}
 					// once you've documented all NodeIds in the current level,
-					// set
+					// move on to the next one
 					nextLevelDown = nextnextLevelDown
 				}
 
