@@ -11,9 +11,6 @@ func (myGraph GoGraph) initStoneString(someStones map[int]bool) stoneString {
 }
 
 func (myGraph GoGraph) computeStoneStrings() {
-
-	anEmptyMap := make(map[int]bool)
-
 	for _, node := range myGraph.nodes {
 		// once you find a colored node
 		if node.color != 0 {
@@ -67,7 +64,7 @@ func (myGraph GoGraph) computeStoneStrings() {
 				// creates a stoneString whose constituents are determined
 				// by the map and update these nodes to indicate that they belong to
 				// this stoneString
-				initStoneString(nodesInStoneString)
+				myGraph.initStoneString(nodesInStoneString)
 			}
 		}
 	}

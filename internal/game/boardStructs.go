@@ -210,7 +210,7 @@ func (s *boardState) playMoveInput(input moveInput) error {
 	// Store the info as a chromaticStrings object
 	var last chromaticStrings
 	if L := len(s.allStoneStrings); L != 0 { //use last history entry, if any
-		last := s.allStoneStrings[L-1]
+		last = s.allStoneStrings[L-1]
 	}
 	next := computeNextChromaticStrings(last, capt, subsumed, newString)
 	m := move{
