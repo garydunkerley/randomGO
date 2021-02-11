@@ -44,7 +44,7 @@ func (G GoGraph) getCapturedStrings(nodeID int, color int8) []stoneString {
 	}
 
 	for _, z := range potentialCaptives {
-		if len(G.stringOf[z].liberties) == 1 {
+		if countLiberties(G.stringOf[z]) == 1 {
 			capturedStrings = append(capturedStrings, G.stringOf[z])
 		}
 	}
