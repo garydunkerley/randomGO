@@ -63,7 +63,7 @@ func checkIntOrCoords(input string) error {
 	return nil
 }
 
-// parseIntOrCoords converts a validated input (int or coords) into a nodeId
+// parseIntOrCoords converts a validated input (int or coords) into a nodeID
 // and a validation bool.
 // It expects a map of valid coordinate pairs and the number of nodes for the given board.
 // If the input is coordinate-form, then the second return value is true when
@@ -71,19 +71,19 @@ func checkIntOrCoords(input string) error {
 // If the input is integer-form, we check if it's in the range -2 <= n < nodeCount.
 // The constant -2 is due to negative numbers coding special instructions:
 // -2 is exit, -1 is pass.
-func parseIntOrCoords(input string, coo map[[2]int]int, nodeCount int) (nodeId int, validId bool) {
+func parseIntOrCoords(input string, coo map[[2]int]int, nodeCount int) (nodeID int, validId bool) {
 	if err := checkIntInput(input); err != nil {
 		// Coordinate case: get the node id from the given coordinate map.
 		if err2 := checkCoordsInput(input); err2 != nil {
 			panic("Invalid input passed to parseIntOrCoords, validate first!")
 		}
 		a, b := parseCoords(input)
-		nodeId, validId = coo[[2]int{a, b}]
-		return nodeId, validId
+		nodeID, validId = coo[[2]int{a, b}]
+		return nodeID, validId
 	} // Integer case: check if the node id is a key for the given edge map.
-	nodeId = parseInt(input)
-	validId = (-2 <= nodeId) && (nodeId < nodeCount)
-	return nodeId, validId
+	nodeID = parseInt(input)
+	validId = (-2 <= nodeID) && (nodeID < nodeCount)
+	return nodeID, validId
 }
 
 // promptRect creates a prompt for coordinate-based rectangular boards.
@@ -96,10 +96,10 @@ func promptRect() promptui.Prompt {
 	return prompt
 }
 
-// promptNodeId applies the given prompt, validates input, converts to a node id.
+// promptNodeID applies the given prompt, validates input, converts to a node id.
 // If a certain number of consecutive invalid inputs are given, it passes for you.
 // It only checks if the node id exists, not if the move is legal.
-func promptNodeId(prompt promptui.Prompt, coo map[[2]int]int, nodeCount int) int {
+func promptNodeID(prompt promptui.Prompt, coo map[[2]int]int, nodeCount int) int {
 	tryAgainMsg := "Try again, or enter -2 to exit."
 	for attempts := 5; attempts > 0; attempts-- {
 		inputString, err := prompt.Run()
@@ -108,13 +108,13 @@ func promptNodeId(prompt promptui.Prompt, coo map[[2]int]int, nodeCount int) int
 			fmt.Println(tryAgainMsg)
 			continue
 		} // good input, convert to a meaningful int
-		nodeId, ok := parseIntOrCoords(inputString, coo, nodeCount)
+		nodeID, ok := parseIntOrCoords(inputString, coo, nodeCount)
 		if !ok {
 			fmt.Println("Invalid node ID.")
 			fmt.Println(tryAgainMsg)
 			continue
 		}
-		return nodeId
+		return nodeID
 	}
 	fmt.Println("Too many invalid moves. Passing.")
 	return -1
@@ -125,29 +125,38 @@ func promptNodeId(prompt promptui.Prompt, coo map[[2]int]int, nodeCount int) int
 func (gameState boardState) runGame() {
 	coo, nodeCount := gameState.coords, gameState.nodeCount
 	prompt := promptRect()
+	gameState.ongoing = true
 
-	for nodeId := promptNodeId(prompt, coo, nodeCount); nodeId != -2 && gameState.ongoing; {
-		next := moveInput{id: nodeId}
+	for gameState.ongoing {
+		nodeID := promptNodeID(prompt, coo, nodeCount)
+		// check for exit code
+		if nodeID == -2 {
+			print("Goodbye!")
+			break
+		}
 
-		// Populate playerColor
+		next := moveInput{id: nodeID} // Populate playerColor
 		if gameState.whiteToMove == false {
 			next.playerColor = 2
 		} else {
 			next.playerColor = 1
 		}
 
-		if nodeId == -1 {
-			next.isPass = true
+		if nodeID == -1 {
 			fmt.Println("Passing your turn.")
+			next.isPass = true // Must be changed for passes to be counted
 		}
-		//The next moveInput is fully populated.
 
+		//The next moveInput is fully populated.
 		if err := gameState.playMoveInput(next); err != nil {
 			fmt.Println(err)
 			fmt.Println("Please try again.")
+		} else {
+			fmt.Printf("%v", gameState.GoGraph)
 		}
 	}
 	fmt.Println("Game over. You lose.") // a little bit rigged
+	fmt.Printf("Final score: \nWhite: %v\nBlack: %v\n", gameState.whitePoints, gameState.blackPoints)
 }
 
 // StartRectangularGame initializes an n-by-m board and runs a CLI game.

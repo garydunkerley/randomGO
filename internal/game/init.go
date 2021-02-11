@@ -11,6 +11,7 @@ func (a boardTop) initGraph() GoGraph {
 
 	G := GoGraph{
 		nodes:    nodes,
+		stringOf: make(map[int]stoneString),
 		boardTop: a,
 	}
 	for i := 0; i < a.nodeCount; i++ {

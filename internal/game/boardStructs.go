@@ -182,22 +182,24 @@ func (h *history) addMoveAndStrings(m move, C chromaticStrings) {
 
 // playMoveInput will play a moveInput, changing the history and then mutating
 // board state.
-// NOTE: If non-nil error is returned, no changes should be made to global state.
+// Caller responsibility: set move.isPass, handle any special codes like -2 exit
 func (s *boardState) playMoveInput(input moveInput) error {
-	// Check legality
-	err := s.checkLegalMove(input.id, input.playerColor)
-	if err != nil {
-		return err
-	}
-
 	// Check pass
 	if input.isPass {
-		s.history.consecutivePasses++
-		s.history.moveCount++
+		s.consecutivePasses++
+		s.moveCount++
 		if s.consecutivePasses >= 2 {
 			s.ongoing = false
 		}
 		return nil
+	}
+
+	// Check if move is legal
+	// This must come after we check for exits
+	// Caller responsibility: set move.isPass, handle exit codes.
+	err := s.checkLegalMove(input.id, input.playerColor)
+	if err != nil {
+		return err
 	}
 
 	nodeID, color := input.id, input.playerColor

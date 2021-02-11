@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	squareBoard := game.MakeSquareBoard(5, 5)
-	squareBoard.RunGame()
+	game.StartRectangularGame(9, 9)
+	// game.DebugPrint()
 }
