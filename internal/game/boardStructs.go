@@ -28,29 +28,29 @@ type chromaticStrings struct {
 // addStones adds the given string to the appropriate color complex,
 // if it does not already exist.
 // Causes panic if the string has a color other than 1 or 2.
-func (c chromaticStrings) addStones(newString stoneString) {
-	var currentStrings []stoneString
+func (c *chromaticStrings) addStones(newString stoneString) {
+	var current []stoneString
 	switch newString.color {
 	case 1: // black
-		currentStrings = c.black
+		current = c.black
 	case 2: // white
-		currentStrings = c.white
+		current = c.white
 	default: // should be inaccessible
 		panic("bad color")
 	}
 	// Check for duplication
-	for _, oldString := range currentStrings {
-		if mapKeysEqual(newString, oldString) {
+	for _, oldString := range current {
+		if mapKeysEqual(newString.stones, oldString.stones) {
 			return
 		}
 	}
 	// Write
-	currentStrings = append(currentStrings, newString)
+	current = append(current, newString)
 	switch newString.color {
 	case 1: // black
-		c.black = currentStrings
+		c.black = current
 	case 2: // white
-		c.white = currentStrings
+		c.white = current
 	}
 	return
 }
@@ -58,23 +58,23 @@ func (c chromaticStrings) addStones(newString stoneString) {
 // deleteStones deletes a stoneString by value from c.black or c.white
 // Causes panic if the string has a color other than 1 or 2.
 // Causes panic if it attempts to delete a nonexistent value.
-func (c chromaticStrings) deleteStones(newString stoneString) {
-	var currentStrings []stoneString
+func (c *chromaticStrings) deleteStones(newString stoneString) {
+	var current []stoneString
 	var successFlag bool
 	switch newString.color {
 	case 1: // black
-		currentStrings = c.black
+		current = c.black
 	case 2: // white
-		currentStrings = c.white
+		current = c.white
 	default: // should be inaccessible
 		panic("bad color")
 	}
 	// Check for duplication
-	for i, oldString := range currentStrings {
-		if mapKeysEqual(newString, oldString) {
+	for i, oldString := range current {
+		if mapKeysEqual(newString.stones, oldString.stones) {
 			// There's room to optimize the deletion at expense of order
 			successFlag = true
-			currentStrings = append(currentStrings[:i], currentStrings[i+1:])
+			current = append(current[:i], current[i+1:]...)
 			break
 		}
 	}
@@ -83,9 +83,9 @@ func (c chromaticStrings) deleteStones(newString stoneString) {
 	}
 	switch newString.color {
 	case 1: // black
-		c.black = currentStrings
+		c.black = current
 	case 2: // white
-		c.white = currentStrings
+		c.white = current
 	}
 	return
 }
