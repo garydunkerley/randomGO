@@ -32,6 +32,12 @@ func initNode(i int) *node {
 
 // initBoardState initializes a board state with empty history,
 // black to move, game not ongoing.
-func initBoardState(a boardTop) boardState {
-	return boardState{GoGraph: a.initGraph()}
+// world's lowest priority TODO: fractional komi
+func initBoardState(a boardTop, komi int) (X boardState) {
+	X.GoGraph = a.initGraph()
+	//X.status needs no initialization
+	X.history.moves = make([]move, 0)
+	X.history.allStoneStrings = make([]chromaticStrings, 0)
+	X.history.whitePoints = komi
+	return X
 }

@@ -120,9 +120,9 @@ func promptNodeId(prompt promptui.Prompt, coo map[[2]int]int, nodeCount int) int
 	return -1
 }
 
-// RunGame expects an initialized boardState (GoGraph populated)
+// runGame expects an initialized boardState (GoGraph populated)
 // and runs a local CLI game.
-func (gameState boardState) RunGame() {
+func (gameState boardState) runGame() {
 	coo, nodeCount := gameState.coords, gameState.nodeCount
 	prompt := promptRect()
 
@@ -148,4 +148,11 @@ func (gameState boardState) RunGame() {
 		}
 	}
 	fmt.Println("Game over. You lose.") // a little bit rigged
+}
+
+// StartRectangularGame initializes an n-by-m board and runs a CLI game.
+func StartRectangularGame(n int, m int) {
+	state := initBoardState(makeSquareBoard(n, m), 6) //6 komi
+	state.runGame()
+	return
 }

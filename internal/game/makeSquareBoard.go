@@ -1,6 +1,7 @@
 package game
 
-func MakeSquareBoard(n int, m int) boardTop {
+// makeSquareBoard returns a rectangular board topology.
+func makeSquareBoard(n int, m int) boardTop {
 
 	var ourTopology boardTop
 
