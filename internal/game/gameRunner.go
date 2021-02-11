@@ -122,7 +122,7 @@ func promptNodeID(prompt promptui.Prompt, coo map[[2]int]int, nodeCount int) int
 
 // runGame expects an initialized boardState (GoGraph populated)
 // and runs a local CLI game.
-func (gameState boardState) runGame() {
+func (gameState *boardState) runGame() {
 	coo, nodeCount := gameState.coords, gameState.nodeCount
 	prompt := promptRect()
 	gameState.ongoing = true
@@ -137,9 +137,9 @@ func (gameState boardState) runGame() {
 
 		next := moveInput{id: nodeID} // Populate playerColor
 		if gameState.whiteToMove == false {
-			next.playerColor = 2
+			next.playerColor = 1 // black
 		} else {
-			next.playerColor = 1
+			next.playerColor = 2 // white
 		}
 
 		if nodeID == -1 {
@@ -152,11 +152,39 @@ func (gameState boardState) runGame() {
 			fmt.Println(err)
 			fmt.Println("Please try again.")
 		} else {
+			fmt.Printf("Debug: you played node ID %v", nodeID)
 			fmt.Printf("%v", gameState.GoGraph)
 		}
 	}
-	fmt.Println("Game over. You lose.") // a little bit rigged
+	fmt.Println("\nGame over. You lose.") // a little bit rigged
 	fmt.Printf("Final score: \nWhite: %v\nBlack: %v\n", gameState.whitePoints, gameState.blackPoints)
+}
+
+// moveByID is an alternate way to run a game. It is not interactive.
+// You simply provide the node ID and the move is played.
+func (gameState *boardState) moveByID(ID int) error {
+	gameState.ongoing = true
+	if ID == -2 {
+		return errors.New("moveByID does not support this exit code")
+	}
+	if ID < -2 {
+		return errors.New("Non-pass negative input given to moveByID")
+	}
+	if N := gameState.nodeCount; ID >= N {
+		errorMsg := fmt.Sprintf("ID %v is too large. Max valid ID: %v", ID, N)
+		return errors.New(errorMsg)
+	}
+
+	next := moveInput{id: ID} // Populate move: ID, color, pass.
+	if gameState.whiteToMove == false {
+		next.playerColor = 2
+	} else {
+		next.playerColor = 1
+	}
+	if ID == -1 {
+		next.isPass = true // Must be changed for passes to be counted
+	}
+	return gameState.playMoveInput(next)
 }
 
 // StartRectangularGame initializes an n-by-m board and runs a CLI game.

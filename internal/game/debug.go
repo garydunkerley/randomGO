@@ -1,18 +1,19 @@
 package game
 
+/*
 import "fmt"
 
 func DebugPrint() {
 
-	fmt.Println("\ncheckIntInput: %v\n", checkIntInput("-2"))
-	fmt.Println("\ncheckIntInput: %v\n", checkIntInput("2"))
-	fmt.Println("\ncheckIntInput: %v\n", checkIntInput("2-2"))
+	fmt.Printf("\ncheckIntInput: %v\n", checkIntInput("-2"))
+	fmt.Printf("\ncheckIntInput: %v\n", checkIntInput("2"))
+	fmt.Printf("\ncheckIntInput: %v\n", checkIntInput("2-2"))
 
-	fmt.Println("\n\ncheckCoordsInput: %v\n", checkCoordsInput("-2"))
-	fmt.Println("\ncheckCoordsInput: %v\n", checkCoordsInput("2"))
-	fmt.Println("\ncheckCoordsInput: %v\n", checkCoordsInput("2-2"))
+	fmt.Printf("\n\ncheckCoordsInput: %v\n", checkCoordsInput("-2"))
+	fmt.Printf("\ncheckCoordsInput: %v\n", checkCoordsInput("2"))
+	fmt.Printf("\ncheckCoordsInput: %v\n", checkCoordsInput("2-2"))
 
-	fmt.Println("\nparseCoords\n")
+	fmt.Println("\nparseCoords")
 	// causes panic
 	// x, z := parseCoords("-2")
 	// fmt.Printf("Parse -2:\n nodeID: %v, valid: %v\n", x, z)
@@ -23,7 +24,7 @@ func DebugPrint() {
 	x, z := parseCoords("2-2")
 	fmt.Printf("Parse 2-2:\n nodeID: %v, valid: %v\n", x, z)
 
-	fmt.Println("\nparseIntOrCoords\n")
+	fmt.Println("\nparseIntOrCoords")
 	w, y := parseIntOrCoords("-2", nil, 100)
 	fmt.Printf("Parse -2:\n nodeID: %v, valid: %v\n", w, y)
 
@@ -35,3 +36,4 @@ func DebugPrint() {
 	w, y = parseIntOrCoords("2-2", J, 25)
 	fmt.Printf("Parse 2-2:\n nodeID: %v, valid: %v\n", w, y)
 }
+*/
