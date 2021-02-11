@@ -144,9 +144,8 @@ func (G *GoGraph) computeNewString(
 // removes subsumed strings from your color.
 // and adds the new string to your color.
 func computeNextChromaticStrings(current chromaticStrings,
-	capt []stoneString,
-	subsumed []stoneString,
-	new_ stoneString) chromaticStrings {
+	capt []stoneString, subsumed []stoneString, new_ stoneString,
+) chromaticStrings {
 	for _, str := range capt {
 		current.deleteStones(str)
 	}
@@ -158,16 +157,16 @@ func computeNextChromaticStrings(current chromaticStrings,
 }
 
 // boardUpdate modifies the boardState by a single move, as follows.
+// 0. Flip the x.whiteToMove bool.
 // 1. Recolor the given node to the player's color.
 // 2. Captured stones are removed.
 // 3. The node groups are updated:
 // 3a. x.GoGraph.stringOf[newnode] = newString
 // 3b. x.GoGraph.stringOf[friendlyNodeInAdjacentGroup] = newString
 // 3c. delete(x.stringOf, enemyNodeInCapturedGroup)
-func (x *boardState) boardUpdate(m move,
-	subsumed []stoneString,
-	capt []stoneString,
-	new_ stoneString) {
+func (x *boardState) boardUpdate(m move, subsumed []stoneString,
+	capt []stoneString, new_ stoneString) {
+	x.whiteToMove = !x.whiteToMove
 	newNode := x.nodes[m.id]
 	newNode.color = m.playerColor // 1: add new stone
 	x.stringOf[m.id] = new_       // 3a: update stone group
