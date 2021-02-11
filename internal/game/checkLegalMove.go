@@ -47,10 +47,10 @@ func (y boardState) suicidalMove(n int, c int8) bool {
 		} else if z.color != c {
 			// if a stone is played in the last liberty of an enemy group,
 			// it is not a suicide
-			if len(y.stringOf[z.id].liberties) == 1 {
+			if countLiberties(y.stringOf[z.id]) == 1 {
 				return false
 			}
-		} else if len(y.stringOf[z.id].liberties) > 1 {
+		} else if countLiberties(y.stringOf[z.id]) > 1 {
 			// if an adjacent friendly group has at least two liberties,
 			// it is not a suicide
 			return false
