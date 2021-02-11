@@ -5,19 +5,20 @@ func initStoneString(someStones map[int]bool) stoneString {
 	myStoneString.stones = someStones
 
 	for z := range someStones {
-		G.stringOf[z] = myStoneString
+		myGraph.stringOf[z] = myStoneString
 	}
+	return myStoneString
 }
 
-func (G GoGraph) computeStoneStrings() {
+func (myGraph GoGraph) computeStoneStrings() {
 
 	anEmptyMap := make(map[int]bool)
 
-	for node := range G.nodes {
+	for _, node := range myGraph.nodes {
 		// once you find a colored node
 		if node.color != 0 {
 			// if it does not already belong to a stoneString
-			if G.stringOf[node.id] == nil {
+			if len(myGraph.stringOf[node.id].stones) == 0 {
 
 				nodesInStoneString := make(map[int]bool)
 
@@ -31,7 +32,7 @@ func (G GoGraph) computeStoneStrings() {
 				// collect all friendly neighbors of node
 				// to be designated as belonging to the
 				// next level of the tree
-				for friendlyID := range sameColorNeighbors(node) {
+				for friendlyId := range getSameColorNeighbors(node) {
 
 					nextLevelDown[friendlyId] = true
 				}
@@ -47,7 +48,7 @@ func (G GoGraph) computeStoneStrings() {
 						// append the neighbors of x to a list
 						// corresponding to all stones the
 						// next layer after the current one
-						for y := range sameColorNeighbors(G.nodes[x]) {
+						for y := range getSameColorNeighbors(myGraph.nodes[x]) {
 
 							// if a given same color neighbor of x
 							// is not already in a group
@@ -70,4 +71,5 @@ func (G GoGraph) computeStoneStrings() {
 			}
 		}
 	}
+	return
 }
