@@ -19,12 +19,89 @@ type stoneString struct {
 }
 
 // chromaticStrings represents two sets of stoneStrings, one per color
-// Usage: ensure that the colors are copacetic.
-//   Each key G of chromaticStrings.black must satisfy G.color == 1
-//   (resp. chromaticStrings.white, G.color == 2)
+// Avoid duplicate stoneStrings by using the addStones method.
 type chromaticStrings struct {
-	black map[stoneString]bool
-	white map[stoneString]bool
+	black []stoneString
+	white []stoneString
+}
+
+// addStones adds the given string to the appropriate color complex,
+// if it does not already exist.
+// Causes panic if the string has a color other than 1 or 2.
+func (c chromaticStrings) addStones(newString stoneString) {
+	var currentStrings []stoneString
+	switch newString.color {
+	case 1: // black
+		currentStrings = c.black
+	case 2: // white
+		currentStrings = c.white
+	default: // should be inaccessible
+		panic("bad color")
+	}
+	// Check for duplication
+	for _, oldString := range currentStrings {
+		if mapKeysEqual(newString, oldString) {
+			return
+		}
+	}
+	// Write
+	currentStrings = append(currentStrings, newString)
+	switch newString.color {
+	case 1: // black
+		c.black = currentStrings
+	case 2: // white
+		c.white = currentStrings
+	}
+	return
+}
+
+// deleteStones deletes a stoneString by value from c.black or c.white
+// Causes panic if the string has a color other than 1 or 2.
+// Causes panic if it attempts to delete a nonexistent value.
+func (c chromaticStrings) deleteStones(newString stoneString) {
+	var currentStrings []stoneString
+	var successFlag bool
+	switch newString.color {
+	case 1: // black
+		currentStrings = c.black
+	case 2: // white
+		currentStrings = c.white
+	default: // should be inaccessible
+		panic("bad color")
+	}
+	// Check for duplication
+	for i, oldString := range currentStrings {
+		if mapKeysEqual(newString, oldString) {
+			// There's room to optimize the deletion at expense of order
+			successFlag = true
+			currentStrings = append(currentStrings[:i], currentStrings[i+1:])
+			break
+		}
+	}
+	if !successFlag {
+		panic("nonexistent key deletion")
+	}
+	switch newString.color {
+	case 1: // black
+		c.black = currentStrings
+	case 2: // white
+		c.white = currentStrings
+	}
+	return
+}
+
+//mapKeysEqual checks if the maps have the same keys.
+func mapKeysEqual(map1 map[int]bool, map2 map[int]bool) bool {
+	if len(map1) != len(map2) {
+		return false
+	}
+	for key := range map1 {
+		_, ok := map2[key]
+		if !ok {
+			return false
+		}
+	}
+	return true
 }
 
 // boardTop stores the information to construct a game board.
@@ -138,14 +215,14 @@ func (s *boardState) playMoveInput(input moveInput) error {
 	// Store the info as a chromaticStrings object
 	var last chromaticStrings
 	if L := len(s.allStoneStrings); L != 0 {
-		lastChromaticStrings := s.allStoneStrings[L-1]
+		last := s.allStoneStrings[L-1]
 	}
 
 	// For computeNextStrings to be accurate, newString should have accurate liberties.
 	// capt and subsumed need only have correct stones.
 	// FIXME: There is probably going to be some bug with liberties here.
 	// Be sure to test cases where a single stone kills a string, or when a group kills a string.
-	next := computeNextStrings(last, capt, subsumed, newString, m.playerColor)
+	next := computeNextStrings(last, capt, subsumed, newString)
 
 	s.history.addMoveAndStrings(m, next)
 

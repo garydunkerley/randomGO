@@ -158,33 +158,12 @@ func (G GoGraph) getNewStringData(
 func computeNextStrings(current chromaticStrings,
 	capt map[stoneString]bool,
 	subsumed map[stoneString]bool,
-	new_ stoneString,
-	moveColor int8) (next chromaticStrings) {
-	var ownStrings map[stoneString]bool
-	var oppStrings map[stoneString]bool
-	if moveColor == 1 {
-		ownStrings = current.black
-		oppStrings = current.white
-	} else {
-		ownStrings = current.white
-		oppStrings = current.black
+	new_ stoneString) chromaticStrings {
+	for str := range append(capt, subsumed) {
+		current.deleteStones(str)
 	}
-	for string_, _ := range capt {
-		delete(oppStrings, string_)
-	}
-	for string_, _ := range subsumed {
-		delete(ownStrings, string_)
-	}
-	ownStrings[new_] = true
-	// now give them the white/black labels
-	if moveColor == 1 {
-		next.black = ownStrings
-		next.white = oppStrings
-	} else {
-		next.black = oppStrings
-		next.white = ownStrings
-	}
-	return next
+	current.addStones(new_)
+	return current
 }
 
 // boardUpdate modifies the boardState by a single move, as follows.
