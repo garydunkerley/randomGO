@@ -1,6 +1,6 @@
 package game
 
-func initStoneString(someStones map[int]bool) stoneString {
+func (myGraph GoGraph) initStoneString(someStones map[int]bool) stoneString {
 	var myStoneString stoneString
 	myStoneString.stones = someStones
 
