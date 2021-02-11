@@ -205,25 +205,18 @@ func (s *boardState) playMoveInput(input moveInput) error {
 	capt := s.getCapturedStrings(nodeID, color)
 	//Note that the liberties of these strings do not account for captures yet.
 	//It's just the old strings, before the move is played.
-	newString, newStringOf := s.getNewStringData(capt, subsumed, input)
+	newString := s.computeNewString(subsumed, input)
 
+	// Store the info as a chromaticStrings object
+	var last chromaticStrings
+	if L := len(s.allStoneStrings); L != 0 { //use last history entry, if any
+		last := s.allStoneStrings[L-1]
+	}
+	next := computeNextChromaticStrings(last, capt, subsumed, newString)
 	m := move{
 		moveInput:    input,
 		capturesMade: countCaptures(capt),
 	}
-
-	// Store the info as a chromaticStrings object
-	var last chromaticStrings
-	if L := len(s.allStoneStrings); L != 0 {
-		last := s.allStoneStrings[L-1]
-	}
-
-	// For computeNextStrings to be accurate, newString should have accurate liberties.
-	// capt and subsumed need only have correct stones.
-	// FIXME: There is probably going to be some bug with liberties here.
-	// Be sure to test cases where a single stone kills a string, or when a group kills a string.
-	next := computeNextStrings(last, capt, subsumed, newString)
-
 	s.history.addMoveAndStrings(m, next)
 
 	s.boardUpdate(m, subsumed, capt, newString)

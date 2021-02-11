@@ -18,7 +18,7 @@ func getOppColor(color int8) int8 {
 // getSubsumedStrings gives us a map encoding the stoneStrings that need
 // to be subsumed into a larger stoneString given a play at nodeID of a given color
 func (G GoGraph) getSubsumedStrings(nodeID int, color int8) []stoneString {
-	mergeCandidates := make([]stoneString)
+	mergeCandidates := make([]stoneString, 0)
 	var friendlies []int
 	for _, z := range G.nodes[nodeID].neighbors {
 		if z.color == color {
@@ -34,7 +34,7 @@ func (G GoGraph) getSubsumedStrings(nodeID int, color int8) []stoneString {
 // getCapturedStrings gives a map encoding the stoneStrings
 // that will be captured by a play at nodeID of a given color.
 func (G GoGraph) getCapturedStrings(nodeID int, color int8) []stoneString {
-	capturedStrings := make([]stoneString)
+	capturedStrings := make([]stoneString, 0)
 	var potentialCaptives []int
 
 	for _, z := range G.nodes[nodeID].neighbors {
@@ -64,7 +64,7 @@ func countCaptures(capt []stoneString) int {
 // If a given stone has a neighbor of the opposite color, then we
 // append the nodeid of the captured stone to a list
 // associated with the stoneString of the enemy neighbor.
-// Wrapped by getNewStringData.
+// Wrapped by computeNewString.
 // TODO finish deprecation
 /*
 func (G GoGraph) findCapturedLiberties(capt []stoneString) map[stoneString][]int {
@@ -87,68 +87,31 @@ func (G GoGraph) findCapturedLiberties(capt []stoneString) map[stoneString][]int
 }
 */
 
-// findNewStringOf returns an updated map[int]stoneString,
-// intended to populate the next GoGraph.stringOf field.
-// It expects the output of findCapturedLiberties, which is in the form
-// map[string which needs added liberties] == liberties to add
-// Wrapped by getNewStringData.
-
-//TODO: change liberty handling
-/*
-func (G GoGraph) findNewStringOf(capturedLiberties map[stoneString][]int) (
-	newStringOf map[int]stoneString) {
-	newStringOf = G.stringOf
-	for str, libs := range capturedLiberties {
-		newLiberties := str.liberties
-		for lib := range libs {
-			newLiberties[lib] = true
-		}
-		for stoneId := range str.stones { //update group for each node in this group
-			v := G.stringOf[stoneId]
-			v.liberties = newLiberties
-			newStringOf[stoneId] = v
-		}
-	}
-	return newStringOf
-}
-*/
-
-// computeNewString uses a node id, subsumed strings, and captured strings
+// mergeSubsumed uses a node id and subsumed strings
 // to generate the new stoneString resulting from the given move.
-// Note that it does not update for captures.
-// Wrapped by getNewStringData.
-func (G GoGraph) computeNewString(id int,
-	subsumed map[stoneString]bool) (new_ stoneString) {
-	new_.stones, new_.liberties = make(map[int]bool), make(map[int]bool)
+// Wrapped by computeNewString.
+func (G GoGraph) mergeSubsumed(id int,
+	subsumed []stoneString) (new_ stoneString) {
+	new_.stones = make(map[int]bool)
 	new_.color = G.nodes[id].color
 	new_.stones[id] = true
 	if len(subsumed) == 0 { // Case: no friendly neighbors.
-		for libID := range getLiberties(G.nodes[id]) {
-			new_.liberties[libID] = true
-		}
 		return new_
 	}
-	for string_, _ := range subsumed {
-		for stoneId, _ := range string_.stones { // Add all stones
-			new_.stones[stoneId] = true
-		}
-		for stoneId, _ := range string_.liberties {
-			// Add all liberties, will remove the candidate move as a liberty later
-			new_.liberties[stoneId] = true
-			// NOTE: This does not account for liberties obtained after capturing.
+	for _, string_ := range subsumed {
+		for stoneID := range string_.stones { // Add all stones
+			new_.stones[stoneID] = true
 		}
 	}
-	delete(new_.liberties, id) //remove itself as a liberty
 	return new_
 }
 
-// getNewStringData wraps other string methods.
+// computeNewString wraps mergeSubsumed.
 // It computes the next string and the next map from ints to strings,
 // by use of defer to avoid breaking anything.
-func (G GoGraph) getNewStringData(
-	capt map[stoneString]bool,
-	subsumed map[stoneString]bool,
-	m moveInput) (newString stoneString, newStringOf map[int]stoneString) {
+func (G *GoGraph) computeNewString(
+	subsumed []stoneString,
+	m moveInput) (new_ stoneString) {
 	defer func() {
 		node := G.nodes[m.id]
 		node.color = 0
@@ -156,24 +119,38 @@ func (G GoGraph) getNewStringData(
 	}()
 	node := G.nodes[m.id]
 	node.color = m.playerColor //temporarily color a node
-	newStringOf = G.findNewStringOf(G.findCapturedLiberties(capt))
-	newString = G.computeNewString(m.id, subsumed)
-	return newString, newStringOf
+	new_ = G.mergeSubsumed(m.id, subsumed)
+	return new_
 }
 
-// computeNextStrings take the current strings and all the deltas
+//next stringOf table: update stones in new string and captured strings
+/*
+	//deprecate: don't need to return stringOf
+	newStringOf = G.StringOf
+	for stoneID := range new_.stones {
+		newStringOf[stoneID] = new_
+	}
+	for str := range capt {
+		for stoneID := range str.stones {
+			delete(newStringOf, stoneID)
+		}
+	}
+	return new_, newStringOf
+*/
+
+// computeNextChromaticStrings take the current strings and all the deltas
 // and returns the strings for next turn, as a chromaticStrings object.
 // It removes captured strings from the opponent's side,
 // removes subsumed strings from your color.
 // and adds the new string to your color.
-func computeNextStrings(current chromaticStrings,
-	capt map[stoneString]bool,
-	subsumed map[stoneString]bool,
+func computeNextChromaticStrings(current chromaticStrings,
+	capt []stoneString,
+	subsumed []stoneString,
 	new_ stoneString) chromaticStrings {
-	for str := range capt {
+	for _, str := range capt {
 		current.deleteStones(str)
 	}
-	for str := range subsumed {
+	for _, str := range subsumed {
 		current.deleteStones(str)
 	}
 	current.addStones(new_)
@@ -188,23 +165,23 @@ func computeNextStrings(current chromaticStrings,
 // 3b. x.GoGraph.stringOf[friendlyNodeInAdjacentGroup] = newString
 // 3c. delete(x.stringOf, enemyNodeInCapturedGroup)
 func (x *boardState) boardUpdate(m move,
-	subsumed map[stoneString]bool,
-	capt map[stoneString]bool,
+	subsumed []stoneString,
+	capt []stoneString,
 	new_ stoneString) {
 	newNode := x.nodes[m.id]
 	newNode.color = m.playerColor // 1: add new stone
 	x.stringOf[m.id] = new_       // 3a: update stone group
 
-	for string_ := range capt {
-		for id := range string_.stones {
+	for _, str := range capt {
+		for id := range str.stones {
 			captNode := x.nodes[id]
 			captNode.color = 0     //2: remove captured stones
 			delete(x.stringOf, id) //3c: update captured stone group
 		}
 	}
 
-	for string_ := range subsumed {
-		for id := range string_.stones {
+	for _, str := range subsumed {
+		for id := range str.stones {
 			x.stringOf[id] = new_ //3b: update subsumed stone group
 		}
 	}
