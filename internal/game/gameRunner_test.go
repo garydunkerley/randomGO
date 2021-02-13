@@ -106,3 +106,15 @@ func TestSwitchOnPass(t *testing.T) {
 		t.Fatal()
 	}
 }
+
+/*
+func ColorSwitchOnPass(t *testing.T) {
+	state := initBoardState(makeSquareBoard(9, 9), 6)
+	desiredColor := 2
+	state.moveByID(-1)
+	state.MoveByID(0)
+	if state.goGraph[0].color != 2 {
+		t.Logf("Stone color does not match player color.")
+	}
+}
+*/
