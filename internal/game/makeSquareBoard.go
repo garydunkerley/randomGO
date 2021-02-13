@@ -13,20 +13,25 @@ func makeSquareBoard(n int, m int) boardTop {
 
 	for i := 0; i < n; i++ {
 		for j := 0; j < m; j++ {
+			ID := i*m + j
+			coords[[2]int{i, j}] = ID
 
-			coords[[2]int{i, j}] = i*n + j
+			// The board is traversed top-to-bottom, left-to-right,
+			// starting from the top left corner (0-0).
+			// Vertical shifts correspond to ID shifts by 1.
+			// Horizontal shifts correspond to ID shifts by m.
 
-			if j != 0 { // add left node if it exists
-				edges[(i*n)+j] = append(edges[i*n+j], i*n+j-1)
+			if i != 0 { // add left node (if it exists)
+				edges[ID] = append(edges[ID], ID-m)
 			}
-			if j != m-1 { // add right node if it exists
-				edges[i*n+j] = append(edges[i*n+j], i*n+j+1)
+			if i != n-1 { // add right node
+				edges[ID] = append(edges[ID], ID+m)
 			}
-			if i != 0 { // add lower node if it exists
-				edges[i*n+j] = append(edges[i*n+j], (i-1)*n+j)
+			if j != 0 { // add upper node
+				edges[ID] = append(edges[ID], ID-1)
 			}
-			if i != n-1 { // add upper node if it exists
-				edges[i*n+j] = append(edges[i*n+j], (i+1)*n+j)
+			if j != m-1 { // add lower node
+				edges[ID] = append(edges[ID], ID+1)
 			}
 		}
 	}

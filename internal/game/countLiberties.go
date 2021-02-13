@@ -6,7 +6,6 @@ func (myGraph GoGraph) countLiberties(S stoneString) int {
 		for y := range getLiberties(myGraph.nodes[x]) {
 			liberties[y] = true
 		}
-
 	}
 	return len(liberties)
 }

@@ -33,6 +33,13 @@ func TestEdgeLiberties(t *testing.T) {
 	libCount := state.countLiberties(state.stringOf[ID])
 	if libCount != 3 {
 		t.Logf("Edge test: expected 3 liberties, have %v", libCount)
+		t.Logf("Liberty IDs: %v", getLiberties(state.nodes[ID]))
+		t.Logf("Edge IDs (boardTop): %v", state.edges[ID])
+		t.Logf("Neighbor count (node-level): %v",
+			len(state.nodes[ID].neighbors))
+		for _, y := range state.nodes[ID].neighbors {
+			t.Logf("Neighbor ID %v: color %v", y.id, y.color)
+		}
 		t.Fatal(state)
 	}
 }
@@ -49,6 +56,13 @@ func TestCornerLiberties(t *testing.T) {
 	libCount := state.countLiberties(state.stringOf[ID])
 	if libCount != 2 {
 		t.Logf("Corner test: expected 2 liberties, have %v", libCount)
+		t.Logf("Liberty IDs: %v", getLiberties(state.nodes[ID]))
+		t.Logf("Edge IDs (boardTop): %v", state.edges[ID])
+		t.Logf("Neighbor count (node-level): %v",
+			len(state.nodes[ID].neighbors))
+		for _, y := range state.nodes[ID].neighbors {
+			t.Logf("Neighbor ID %v: color %v", y.id, y.color)
+		}
 		t.Fatal(state)
 	}
 }
@@ -65,6 +79,13 @@ func TestCenterLiberties(t *testing.T) {
 	libCount := state.countLiberties(state.stringOf[ID])
 	if libCount != 4 {
 		t.Logf("Corner test: expected 4 liberties, have %v", libCount)
+		t.Logf("Liberty IDs: %v", getLiberties(state.nodes[ID]))
+		t.Logf("Edge IDs (boardTop): %v", state.edges[ID])
+		t.Logf("Neighbor count (node-level): %v",
+			len(state.nodes[ID].neighbors))
+		for _, y := range state.nodes[ID].neighbors {
+			t.Logf("Neighbor ID %v: color %v", y.id, y.color)
+		}
 		t.Fatal(state)
 	}
 }
@@ -82,5 +103,6 @@ func TestSwitchOnPass(t *testing.T) {
 	state.moveByID(-1)
 	if state.whiteToMove == previousPlayer {
 		t.Logf("Player not switching off on pass.")
+		t.Fatal()
 	}
 }

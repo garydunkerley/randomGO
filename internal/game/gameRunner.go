@@ -177,9 +177,9 @@ func (gameState *boardState) moveByID(ID int) error {
 
 	next := moveInput{id: ID} // Populate move: ID, color, pass.
 	if gameState.whiteToMove == false {
-		next.playerColor = 2
-	} else {
 		next.playerColor = 1
+	} else {
+		next.playerColor = 2
 	}
 	if ID == -1 {
 		next.isPass = true // Must be changed for passes to be counted

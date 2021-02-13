@@ -162,17 +162,13 @@ type moveInput struct {
 // It does not check legality of the move. Called by playMoveInput.
 func (h *history) addMoveAndStrings(m move, C chromaticStrings) {
 	h.moveCount++
-	if m.isPass {
-		h.consecutivePasses++
-		return
-	}
 	if m.capturesMade != 0 {
 		if m.playerColor == 1 {
 			h.blackPoints += m.capturesMade
 		} else if m.playerColor == 2 {
 			h.whitePoints += m.capturesMade
 		} else {
-			panic("Attempted to save an invalid move to history (colorless capture).")
+			panic("colorless capture")
 		}
 	}
 	h.moves = append(h.moves, m) // don't update moves or groups on pass
@@ -188,6 +184,7 @@ func (s *boardState) playMoveInput(input moveInput) error {
 	if input.isPass {
 		s.consecutivePasses++
 		s.moveCount++
+		s.whiteToMove = !s.whiteToMove
 		if s.consecutivePasses >= 2 {
 			s.ongoing = false
 		}

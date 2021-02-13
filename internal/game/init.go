@@ -2,7 +2,7 @@ package game
 
 //graph() initializes a goGraph from the given topology.
 //TODO add node connections
-func (a boardTop) initGraph() GoGraph {
+func (a *boardTop) initGraph() GoGraph {
 	nodes := make(map[int]*node)
 	for i := 0; i < a.nodeCount; i++ {
 		newNode := initNode(i)
@@ -12,8 +12,9 @@ func (a boardTop) initGraph() GoGraph {
 	G := GoGraph{
 		nodes:    nodes,
 		stringOf: make(map[int]stoneString),
-		boardTop: a,
+		boardTop: *a,
 	}
+
 	for i := 0; i < a.nodeCount; i++ {
 		for z := range a.edges[i] {
 			nodes[i].neighbors = append(nodes[i].neighbors, nodes[z])
