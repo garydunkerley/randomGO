@@ -33,6 +33,7 @@ func (G GoGraph) getSubsumedStrings(nodeID int, color int8) []stoneString {
 
 // getCapturedStrings gives a map encoding the stoneStrings
 // that will be captured by a play at nodeID of a given color.
+// Expects to be called before the move in question is played.
 func (G GoGraph) getCapturedStrings(nodeID int, color int8) []stoneString {
 	capturedStrings := make([]stoneString, 0)
 	var potentialCaptives []int
@@ -44,7 +45,7 @@ func (G GoGraph) getCapturedStrings(nodeID int, color int8) []stoneString {
 	}
 
 	for _, z := range potentialCaptives {
-		if G.countLiberties(G.stringOf[z]) == 0 {
+		if G.countLiberties(G.stringOf[z]) == 1 {
 			capturedStrings = append(capturedStrings, G.stringOf[z])
 		}
 	}
