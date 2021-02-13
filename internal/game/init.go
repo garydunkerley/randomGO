@@ -16,7 +16,7 @@ func (a *boardTop) initGraph() GoGraph {
 	}
 
 	for i := 0; i < a.nodeCount; i++ {
-		for z := range a.edges[i] {
+		for _, z := range a.edges[i] {
 			nodes[i].neighbors = append(nodes[i].neighbors, nodes[z])
 		}
 	}
