@@ -75,3 +75,12 @@ func TestPlayer1(t *testing.T) {
 		t.Fatal("whiteToMove true on initial move")
 	}
 }
+
+func TestSwitchOnPass(t *testing.T) {
+	state := initBoardState(makeSquareBoard(9, 9), 6)
+	previousPlayer := state.whiteToMove
+	state.moveByID(-1)
+	if state.whiteToMove == previousPlayer {
+		t.Logf("Player not switching off on pass.")
+	}
+}
