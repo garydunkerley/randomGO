@@ -41,5 +41,6 @@ func initBoardState(a boardTop, komi int) (X boardState) {
 	X.history.moves = make([]move, 0)
 	X.history.allStoneStrings = make([]chromaticStrings, 0)
 	X.history.whitePoints = komi
+	X.history.koPoint = -1
 	return X
 }

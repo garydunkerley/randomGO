@@ -61,6 +61,20 @@ func countCaptures(capt []stoneString) int {
 	return sum
 }
 
+// getKoPoints takes the outputs of computeNewString and getCapturedStrings to determine whether a given play produces a ko point, which will prevent the player from playing in that position next turn.
+func (s *boardState) getKoPoint(inputID int, newString stoneString, capt []stoneString) {
+	if countCaptures(capt) == 1 {
+		if len(newString.stones) == 1 {
+			if s.GoGraph.countLiberties(newString) == 1 {
+				s.history.koPoint = inputID
+				return
+			}
+		}
+	}
+	s.history.koPoint = -1
+	return
+}
+
 // findCapturedLiberties takes each captured group and looks at its stones.
 // If a given stone has a neighbor of the opposite color, then we
 // append the nodeid of the captured stone to a list

@@ -27,7 +27,7 @@ func (x boardState) checkLegalMove(n int, c int8) error {
 	if x.suicidalMove(n, c) {
 		return errors.New("Illegal move: Suicide.")
 
-	} else if x.illegal_ko_move(n, c) {
+	} else if x.illegal_ko_move(n) {
 		return errors.New("Illegal move: Violates ko rule.")
 
 	} else {
@@ -64,6 +64,9 @@ func (y boardState) suicidalMove(n int, c int8) bool {
 }
 
 //illegal_ko_move will eventually check for ko
-func (y boardState) illegal_ko_move(n int, c int8) bool {
+func (y boardState) illegal_ko_move(n int) bool {
+	if n == y.history.koPoint {
+		return true
+	}
 	return false
 }

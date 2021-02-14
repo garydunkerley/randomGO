@@ -142,6 +142,7 @@ type history struct {
 	consecutivePasses int                // Incremented by passes, reset to 0 by non-pass moves.
 	whitePoints       int                // Accumulated points for white (komi, if any, plus captures)
 	blackPoints       int                // Accumulated points for black (captures)
+	koPoint           int                // stores ko points
 }
 
 // move is a moveInput and the associated number of captures made with the move
@@ -205,6 +206,9 @@ func (s *boardState) playMoveInput(input moveInput) error {
 	//Note that the liberties of these strings do not account for captures yet.
 	//It's just the old strings, before the move is played.
 	newString := s.computeNewString(subsumed, input)
+
+	// Determines whether there are any ko points, sets s.history.koPoint to -1 if none are found.
+	s.getKoPoint(nodeID, newString, capt)
 
 	// Store the info as a chromaticStrings object
 	var last chromaticStrings

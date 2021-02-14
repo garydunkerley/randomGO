@@ -134,8 +134,11 @@ func (gameState *boardState) runGame() {
 			print("Goodbye!")
 			break
 		}
+		// instantiates an instance of the moveInput
+		// struct with id equal to user input
+		next := moveInput{id: nodeID}
 
-		next := moveInput{id: nodeID} // Populate playerColor
+		// Populate playerColor
 		if gameState.whiteToMove == false {
 			next.playerColor = 1 // black
 		} else {
