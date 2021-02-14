@@ -156,7 +156,7 @@ func (gameState *boardState) runGame() {
 			fmt.Println("Please try again.")
 		} else {
 			fmt.Printf("Debug: you played node ID %v", nodeID)
-			fmt.Printf("Debug: the koPoint is currently:", gameState.history.koPoint)
+			fmt.Printf("Debug: the koPoint is currently: %v", gameState.history.koHistory[len(gameState.history.koHistory)-1].koPoint)
 			fmt.Printf("%v", gameState.GoGraph)
 		}
 	}

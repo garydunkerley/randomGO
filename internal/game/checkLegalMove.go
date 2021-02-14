@@ -63,10 +63,15 @@ func (y boardState) suicidalMove(n int, c int8) bool {
 	return true
 }
 
-//illegal_ko_move will eventually check for ko
+//illegal_ko_move checks to see if the board history has logged a ko point and, if so, whether the
 func (y boardState) illegal_ko_move(n int) bool {
-	if n == y.history.koPoint {
-		return true
+	if y.history.koHistory[len(y.history.koHistory)-1].hasKo {
+		if y.history.koHistory[len(y.history.koHistory)-1].koPoint == n {
+			return true
+		} else {
+			return false
+		}
+	} else {
+		return false
 	}
-	return false
 }

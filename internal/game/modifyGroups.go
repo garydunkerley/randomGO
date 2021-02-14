@@ -1,5 +1,9 @@
 package game
 
+import (
+	"fmt"
+)
+
 //TODO: Jobs for preparing a move.
 //	   1. From move input: compute captured/subsumed/new strings
 //DONE 2. Count captured stones. [used to track points]
@@ -62,16 +66,30 @@ func countCaptures(capt []stoneString) int {
 }
 
 // getKoPoints takes the outputs of computeNewString and getCapturedStrings to determine whether a given play produces a ko point, which will prevent the player from playing in that position next turn.
-func (s *boardState) getKoPoint(inputID int, newString stoneString, capt []stoneString) {
+func (s *boardState) setKoPoint(inputID int, newString stoneString, capt []stoneString) {
+	var setKo simpleKo
 	if countCaptures(capt) == 1 {
+		fmt.Println("Debug: Capt has length 1")
 		if len(newString.stones) == 1 {
+			fmt.Println("Debug: new string has only one stone")
+			fmt.Println("The group has ", s.GoGraph.countLiberties(newString), " liberties.")
 			if s.GoGraph.countLiberties(newString) == 1 {
-				s.history.koPoint = inputID
-				return
+				fmt.Println("Debug: Ko point detected!")
+				setKo.hasKo = true
+				setKo.koPoint = getLiberties(s.GoGraph.nodes[inputID])[0]
+			} else {
+				setKo.hasKo = false
+				setKo.koPoint = -1
 			}
+		} else {
+			setKo.hasKo = false
+			setKo.koPoint = -1
 		}
+	} else {
+		setKo.hasKo = false
+		setKo.koPoint = -1
 	}
-	s.history.koPoint = -1
+	s.history.koHistory = append(s.history.koHistory, setKo)
 	return
 }
 
