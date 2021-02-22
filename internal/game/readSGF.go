@@ -9,7 +9,7 @@ func checkError(e error) {
 func sgfToStringSlice() []string {
 	file, err := ioutil.ReadFile("path_to_file")
 	check(err)
-	myStrings := strings.Split(string(file), "\n")
+	myStrings := strings.Split(string(file), "(;")
 
 	return myStrings
 }
@@ -24,47 +24,100 @@ func getSquareBoardFromSGF(sgfString []string) boardTop {
 	}
 }
 
-func (h history) populateHistory(sgfString []string) {
-	// 1. Should convert alphabetical data to node numbers.
-	// 2. Should append these node numbers to the move struct
-	// 3. should construct koHistory
-	// 4. Should construct and store list of
-	return
+// initTreeNode specifies a node in the game tree by a move, treeNode pointer pair.
+func initTreeNode(value move, parent *treeNode) *treeNode {
+	var myTreeNode treeNode
+	myTreeNode.value = value
+	myTreeNode.parent = parent
+
+	return *myTreeNode
+
 }
 
-func getMoveHistory(sgfString []string) []move {
+// newChild method on a parent accepts a move and modifies the parent so that it has a child corresponding to the specified move
+func (parent treeNode) newChild(m move) *treeNode {
+
+	child := initTreeNode(m, parent)
+	parent.children = append(parent.children, newChild)
+
+	return child
+
+}
+
+func continueAlongCurrentBranch(crawler *treeNode) *treeNode {
+	return crawler.children[0]
+}
+
+func choosePath(crawler *treeNode, i int) *treeNode {
+	return crawler.children[i]
+}
+
+func moveBack(crawler *treeNode) *treeNode {
+	return crawler.parent
+}
+
+// TODO: Find a way to spit the SGF moveset into parts, one object of type []string for each branch.
+
+// createBranch generates treeNodes that are attached to a given root
+func createBranch(branch []move, root *treeNode) {
+	var child *treeNode
+
+	var crawler *treeNode
+
+	// we start by making the root have a child and set crawler to this location
+	crawler = &root.newChild(branch[0])
+
+	// for each item in the branch, we initialize a treeNode to be a child of crawler and
+	// then move crawler to the newly created child
+	for i := 1; i < len(branch); i++ {
+		&crawler.newChild(branch[i])
+		crawler = child
+	}
+
+}
+
+// convertBranch takes a collection of strings and outputs their corresponding sequence of moves.
+func convertBranch(branchString []string) []move {
 	var nodeData []rune
 	var newMove move
-	var newMoveInput moveInput
 
-	var myMoves []move
+	var branch []move
+	// a designated location on the tree
 
-	for z := range sgfString {
+	// crawler will be used to move up and down the tree as we construct it starting from the root
+
+	for z := range branchString {
 		// if a string in the sgfString slice
 		// encodes a move
 		if strings.Contains(";") {
-			// save the player color for the move
-			if strings.Contains("B") {
-				newMoveInput.playerColor = 1
+			// if we are beginning to look at variations, break the loop
+			if strings.Contains(")") {
+				break
 			} else {
-				newMoveInput.playerColor = 2
-			}
-			// isolates the individual runes that encode the nodeid
-			nodeData = []rune(strings.Trim(z, "BW;()[]"))
-			if nodeData == "" {
-				newMoveInput.id = -1
-				newMoveInput.isPass = true
-			} else {
-				newMoveInput.id = runeToID(nodeData[0]) + runeToID(nodeData[1])
-			}
+				// save the player color for the move
+				if strings.Contains("B") {
+					newMoveInput.playerColor = 1
+				} else {
+					newMoveInput.playerColor = 2
+				}
+				// isolates the individual runes that encode the nodeid
+				nodeData = []rune(strings.Trim(z, "BW;()[]"))
+				if nodeData == "" {
+					newMoveInput.id = -1
+					newMoveInput.isPass = true
+				} else {
+					newMoveInput.id = runeToID(nodeData[0]) + runeToID(nodeData[1])
+				}
+				newMove.moveInput = newMoveInput
 
-			newMove.moveInput = newMoveInput
-			myMoves = append(myMoves, newMove)
+				branch = append(branch, newMove)
+
+			}
 		}
 
 	}
 
-	return myMoves
+	return branch
 
 }
 
