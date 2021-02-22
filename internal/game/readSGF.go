@@ -1,5 +1,12 @@
 package game
 
+import (
+	"fmt"
+	"io/ioutil"
+	"strconv"
+	"strings"
+)
+
 func checkError(e error) {
 	if e != nil {
 		panic(e)
@@ -8,14 +15,14 @@ func checkError(e error) {
 
 func sgfToStringSlice() []string {
 	file, err := ioutil.ReadFile("path_to_file")
-	check(err)
+	checkError(err)
 	myStrings := strings.Split(string(file), "(;")
 
 	return myStrings
 }
 
 func getSquareBoardFromSGF(sgfString []string) boardTop {
-	boardSize, err := strconv.Atoi(strings.Trim(myStrng[12], "SZ[]"))
+	boardSize, err := strconv.Atoi(strings.Trim(sgfString[12], "SZ[]"))
 	if err == nil {
 		myBoard := makeSquareBoard(boardSize, boardSize)
 		return myBoard
@@ -35,7 +42,7 @@ func initTreeNode(value move, parent *treeNode) *treeNode {
 }
 
 // newChild method on a parent accepts a move and modifies the parent so that it has a child corresponding to the specified move
-func (parent treeNode) newChild(m move) *treeNode {
+func (parent *treeNode) newChild(m move) *treeNode {
 
 	child := initTreeNode(m, parent)
 	parent.children = append(parent.children, newChild)
@@ -65,7 +72,7 @@ func createBranch(branch []move, root *treeNode) {
 	var crawler *treeNode
 
 	// we start by making the root have a child and set crawler to this location
-	crawler = &root.newChild(branch[0])
+	crawler = *root.newChild(branch[0])
 
 	// for each item in the branch, we initialize a treeNode to be a child of crawler and
 	// then move crawler to the newly created child
