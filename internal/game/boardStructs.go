@@ -151,6 +151,18 @@ type simpleKo struct {
 }
 
 // move is a moveInput and the associated number of captures made with the move
+
+// treeNode objects comprise the nodes in the game tree structure. These objects contain a move,
+type treeNode struct {
+	value    move
+	parent   *treeNode
+	children []*treeNode
+}
+
+type gameTree struct {
+	myMap map[int]treeNode
+}
+
 type move struct {
 	moveInput
 	capturesMade int
