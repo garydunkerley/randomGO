@@ -160,6 +160,9 @@ func (gameState *boardState) runGame() {
 			fmt.Printf("%v", gameState.GoGraph)
 
 		}
+
+		// This should force an image of the board to come up.
+		visualizeBoard(gameState.GoGraph)
 	}
 	fmt.Println("\nGame over. You lose.") // a little bit rigged
 	fmt.Printf("Final score: \nWhite: %v\nBlack: %v\n", gameState.whitePoints, gameState.blackPoints)
