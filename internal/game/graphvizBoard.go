@@ -65,19 +65,45 @@ func constructAllStones(gg GoGraph, g *cgraph.Graph) map[*node]*cgraph.Node {
 
 // constructAllEdges iterates the initEdges function over each *node in the GoGraph
 func constructAllEdges(gg GoGraph, t map[*node]*cgraph.Node, g *cgraph.Graph) {
+
+	edgeMade := make(map[string]bool)
+
 	for i := 0; i < len(gg.nodes); i++ {
 		n := gg.nodes[i]
-		initEdges(n, t, g)
+		for _, z := range n.neighbors {
+			// these strings will be used to check
+			// whether an edge has already been constructed or not.
+
+			edgeString1 := strconv.Itoa(z.id) + "," + strconv.Itoa(n.id)
+
+			edgeString2 := strconv.Itoa(n.id) + "," + strconv.Itoa(z.id)
+
+			if edgeMade[edgeString1] {
+				continue
+			} else {
+				s1 := t[n]
+				s2 := t[z]
+				edge, err := g.CreateEdge("some_name", s1, s2)
+				if err != nil {
+					log.Fatal(err)
+				}
+				edge.SetArrowHead("none")
+				edgeMade[edgeString1] = true
+				edgeMade[edgeString2] = true
+			}
+		}
+
 	}
 
 	return
 }
 
+/*
 // initEdges takes a GoGraph node pointer and our struct associating these node pointers to graphviz Nodes to construct an edge connecting each neighbor
 func initEdges(n *node, t map[*node]*cgraph.Node, g *cgraph.Graph) {
 	s1 := t[n]
 	var s2 *cgraph.Node
-	for _, z := range n.neighbors {
+	for z := range n.neighbors {
 		s2 = t[z]
 		edge, err := g.CreateEdge("some_name", s1, s2)
 		if err != nil {
@@ -88,6 +114,8 @@ func initEdges(n *node, t map[*node]*cgraph.Node, g *cgraph.Graph) {
 
 	return
 }
+
+*/
 
 func visualizeBoard(gg GoGraph) {
 
