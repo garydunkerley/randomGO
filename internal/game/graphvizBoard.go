@@ -39,12 +39,13 @@ func initStone(myNode *node, g *cgraph.Graph) *cgraph.Node {
 	stone.SetFixedSize(true)
 
 	if myNode.color == 0 {
-		stone.SetFillColor("grey")
+		stone.SetFillColor("blanchedalmond")
 	} else if myNode.color == 1 {
 		stone.SetFillColor("black")
 	} else {
 		stone.SetFillColor("white")
 	}
+	stone.SetFontSize(0)
 
 	return stone
 }
@@ -117,19 +118,25 @@ func initEdges(n *node, t map[*node]*cgraph.Node, g *cgraph.Graph) {
 
 */
 
-func visualizeBoard(gg GoGraph) {
+func visualizeBoard(gg GoGraph, isRandom bool) {
 
 	var trans map[*node]*cgraph.Node
 
 	cwd := getWorkingDirectory()
 
 	g := graphviz.New()
-	g.SetLayout("osage")
+
+	if isRandom {
+		g.SetLayout("twopi")
+	} else {
+		g.SetLayout("osage")
+	}
 
 	graph, err := g.Graph()
 	if err != nil {
 		log.Fatal(err)
 	}
+	graph.SetBackgroundColor("blanchedalmond")
 
 	// construct the graphviz board
 

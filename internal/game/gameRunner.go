@@ -122,7 +122,7 @@ func promptNodeID(prompt promptui.Prompt, coo map[[2]int]int, nodeCount int) int
 
 // runGame expects an initialized boardState (GoGraph populated)
 // and runs a local CLI game.
-func (gameState *boardState) runGame() {
+func (gameState *boardState) runGame(isRandom bool) {
 	coo, nodeCount := gameState.coords, gameState.nodeCount
 	prompt := promptRect()
 	gameState.ongoing = true
@@ -162,7 +162,7 @@ func (gameState *boardState) runGame() {
 		}
 
 		// This should force an image of the board to come up.
-		visualizeBoard(gameState.GoGraph)
+		visualizeBoard(gameState.GoGraph, isRandom)
 	}
 	fmt.Println("\nGame over. You lose.") // a little bit rigged
 	fmt.Printf("Final score: \nWhite: %v\nBlack: %v\n", gameState.whitePoints, gameState.blackPoints)
@@ -198,6 +198,15 @@ func (gameState *boardState) moveByID(ID int) error {
 // StartRectangularGame initializes an n-by-m board and runs a CLI game.
 func StartRectangularGame(n int, m int) {
 	state := initBoardState(makeSquareBoard(n, m), 6) //6 komi
-	state.runGame()
+	isRandom := false
+
+	state.runGame(isRandom)
 	return
+}
+
+func StartRandomGame(n int, prob float64) {
+	state := initBoardState(makeRandomBoard(n, prob), 10) // 10 komi
+
+	isRandom := true
+	state.runGame(isRandom)
 }
