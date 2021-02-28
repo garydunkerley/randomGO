@@ -92,6 +92,8 @@ func visualizeBoard(gg GoGraph) {
 	cwd := getWorkingDirectory()
 
 	g := graphviz.New()
+	g.SetLayout("osage")
+
 	graph, err := g.Graph()
 	if err != nil {
 		log.Fatal(err)
