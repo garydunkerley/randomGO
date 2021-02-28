@@ -34,6 +34,7 @@ func initStone(myNode *node, g *cgraph.Graph) *cgraph.Node {
 		log.Fatal(err)
 	}
 	stone.SetStyle("filled")
+	stone.SetShape("circle")
 	if myNode.color == 0 {
 		stone.SetFillColor("grey")
 	} else if myNode.color == 1 {
