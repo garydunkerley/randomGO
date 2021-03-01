@@ -155,8 +155,6 @@ func (gameState *boardState) runGame(isRandom bool) {
 			fmt.Println(err)
 			fmt.Println("Please try again.")
 		} else {
-			fmt.Printf("Debug: you played node ID %v", nodeID)
-			fmt.Printf("Debug: the koPoint is currently: %v", gameState.history.koHistory[len(gameState.history.koHistory)-1].koPoint)
 			fmt.Printf("%v", gameState.GoGraph)
 
 		}
@@ -164,8 +162,8 @@ func (gameState *boardState) runGame(isRandom bool) {
 		// This should force an image of the board to come up.
 		visualizeBoard(gameState.GoGraph, isRandom)
 	}
-	fmt.Println("\nGame over. You lose.") // a little bit rigged
-	fmt.Printf("Final score: \nWhite: %v\nBlack: %v\n", gameState.whitePoints, gameState.blackPoints)
+	whiteNaive, blackNaive := getNaiveScore(gameState.GoGraph)
+	fmt.Printf("Final score: \nWhite: %v\nBlack: %v\n", float64(gameState.whitePoints)+whiteNaive, float64(gameState.blackPoints)+blackNaive)
 }
 
 // moveByID is an alternate way to run a game. It is not interactive.
