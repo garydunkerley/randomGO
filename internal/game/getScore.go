@@ -9,87 +9,89 @@ import (
 // isemptyNode takes a GoGraph and spits out a map representing
 // the set of empty nodes in the GoGraph that may contribute to territory
 func getEmptyNodes(gg GoGraph) map[*node]bool {
-	fmt.Println("Debug: begun getEmptyNodes")
 	emptyNodes := make(map[*node]bool)
 	for _, z := range gg.nodes {
 		if z.color == 0 {
 			emptyNodes[z] = true
 		}
 	}
-	fmt.Println("The empty nodes are: ")
-	for i := range emptyNodes {
-		fmt.Println(i.id)
-	}
 	return emptyNodes
 }
 
 // getEmptyClique gets the connected component that a stone belongs to
 func getEmptyClique(n *node) (emptyClique map[*node]bool) {
-	fmt.Println("Debug: begun getEmptyClique")
 	stillSearching := true
 
-	accountedFor := make(map[*node]bool)
+	// accountedFor := make(map[*node]bool)
+	oldEmpties := make(map[*node]bool)
+
+	counter := 0
 
 	if n.color == 0 {
-		if stillSearching {
+		oldEmpties[n] = true
+		// accountedFor[n] = true
+		// newEmpties := make(map[*node]bool)
+		for stillSearching && counter < 100 {
 			newEmpties := make(map[*node]bool)
-			for _, z := range n.neighbors {
-				if z.color == 0 {
-					if accountedFor[z] {
-						continue
-					} else {
-						accountedFor[z] = true
-						newEmpties[z] = true
+
+			for z := range oldEmpties {
+				for _, i := range z.neighbors {
+					if i.color == 0 {
+						if oldEmpties[i] == false {
+							// accountedFor[i] = true
+							newEmpties[i] = true
+						}
 					}
 				}
-
-				if len(newEmpties) == 0 {
-					stillSearching = false
-					break
-				}
 			}
+
+			if len(newEmpties) < 1 {
+				stillSearching = false
+			}
+
+			// clear the way for new stones
+
+			for z := range newEmpties {
+				oldEmpties[z] = true
+			}
+			// fmt.Println("oldEmpties are ", oldEmpties)
+
 		}
 	} else {
 		fmt.Println("Error (getEmptyClique): Node is not empty.")
 	}
-	return accountedFor
+	return oldEmpties
 
 }
 
 // getScoreAssignment takes an emptyClique (a set of empty nodes) and
 func getScoreAssignment(emptyClique map[*node]bool) (string, int) {
-	fmt.Println("Debug: Begun get score assignment")
 	allSameColor := true
 	var color string
 	var oldColor string
 
 	for z := range emptyClique {
-		if allSameColor {
-			continue
-		} else {
+		if allSameColor == false {
 			break
-		}
-		for _, n := range z.neighbors {
-			if emptyClique[n] {
-				continue
-			} else {
+		} else {
+			for _, n := range z.neighbors {
+				if emptyClique[n] == false {
+					oldColor = color
 
-				if n.color == 1 {
-					color = "black"
-				} else {
-					color = "white"
-				}
+					if n.color == 1 {
+						color = "black"
+					} else {
+						color = "white"
+					}
 
-				if color == oldColor || oldColor == "" {
-					continue
-				} else {
-					allSameColor = false
-					break
+					if color != oldColor && oldColor != "" {
+						allSameColor = false
+						break
+					}
 				}
 			}
+			return color, len(emptyClique)
 		}
-		return color, len(emptyClique)
-
 	}
 
 	return "mixed", 0
@@ -121,6 +123,7 @@ func getNaiveScore(gg GoGraph) (float64, float64) {
 				continue
 			}
 			for n := range emptyClique {
+				fmt.Println(n)
 				accountedFor[n] = true
 			}
 		}
