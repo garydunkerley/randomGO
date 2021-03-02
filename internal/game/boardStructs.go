@@ -1,5 +1,9 @@
 package game
 
+import (
+	"fmt"
+)
+
 // node represents an intersection on the board.
 // Every node should have a distinct integer id,
 // ranging from 0 to (# nodes - 1)
@@ -59,7 +63,10 @@ func (c *chromaticStrings) addStones(newString stoneString) {
 // Causes panic if the string has a color other than 1 or 2.
 // Causes panic if it attempts to delete a nonexistent value.
 func (c *chromaticStrings) deleteStones(newString stoneString) {
+	fmt.Println("deleteStones is being called ")
+
 	var current []stoneString
+
 	var successFlag bool
 	switch newString.color {
 	case 1: // black
@@ -69,15 +76,28 @@ func (c *chromaticStrings) deleteStones(newString stoneString) {
 	default: // should be inaccessible
 		panic("bad color")
 	}
+
+	fmt.Println("The string to delete is: ", newString)
+
+	// fmt.Println("White has ", len(current), " stone groups")
+	fmt.Println(successFlag)
 	// Check for duplication
-	for i, oldString := range current {
-		if mapKeysEqual(newString.stones, oldString.stones) {
+
+	for i := 0; i < len(current); i++ {
+		// fmt.Println(current[i], " is an old string")
+		if mapKeysEqual(newString.stones, current[i].stones) {
+			fmt.Println("Debug: Match found!")
 			// There's room to optimize the deletion at expense of order
 			successFlag = true
+			//if len(current) > 1 {
 			current = append(current[:i], current[i+1:]...)
+			//} else {
+			//	current = nil
+			// }
 			break
 		}
 	}
+
 	if !successFlag {
 		panic("nonexistent key deletion")
 	}
@@ -219,7 +239,9 @@ func (s *boardState) playMoveInput(input moveInput) error {
 
 	nodeID, color := input.id, input.playerColor
 	subsumed := s.getSubsumedStrings(nodeID, color)
+
 	capt := s.getCapturedStrings(nodeID, color)
+	fmt.Println("The number of captured stone groups is ", len(capt))
 	//Note that the liberties of these strings do not account for captures yet.
 	//It's just the old strings, before the move is played.
 	newString := s.computeNewString(subsumed, input)

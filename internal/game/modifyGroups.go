@@ -22,16 +22,30 @@ func getOppColor(color int8) int8 {
 // getSubsumedStrings gives us a map encoding the stoneStrings that need
 // to be subsumed into a larger stoneString given a play at nodeID of a given color
 func (G GoGraph) getSubsumedStrings(nodeID int, color int8) []stoneString {
-	mergeCandidates := make([]stoneString, 0)
-	var friendlies []int
+	var isNew bool
+
+	var mergeCandidates []stoneString
+	mergeStringReps := make(map[int]bool)
+
 	for _, z := range G.nodes[nodeID].neighbors {
 		if z.color == color {
-			friendlies = append(friendlies, z.id)
+			isNew = true
+			for i := range mergeStringReps {
+				if mapKeysEqual(G.stringOf[z.id].stones, G.stringOf[i].stones) {
+					isNew = false
+				}
+
+			}
+			if isNew {
+				mergeStringReps[z.id] = true
+			}
 		}
 	}
-	for _, z := range friendlies {
+
+	for z := range mergeStringReps {
 		mergeCandidates = append(mergeCandidates, G.stringOf[z])
 	}
+
 	return mergeCandidates
 }
 
@@ -39,20 +53,34 @@ func (G GoGraph) getSubsumedStrings(nodeID int, color int8) []stoneString {
 // that will be captured by a play at nodeID of a given color.
 // Expects to be called before the move in question is played.
 func (G GoGraph) getCapturedStrings(nodeID int, color int8) []stoneString {
-	capturedStrings := make([]stoneString, 0)
-	var potentialCaptives []int
+
+	var isNew bool
+	var capturedStrings []stoneString
+	captiveStringReps := make(map[int]bool)
 
 	for _, z := range G.nodes[nodeID].neighbors {
 		if z.color == getOppColor(color) {
-			potentialCaptives = append(potentialCaptives, z.id)
+			isNew = true
+			for i := range captiveStringReps {
+				if mapKeysEqual(G.stringOf[z.id].stones, G.stringOf[i].stones) {
+					isNew = false
+				}
+
+			}
+			if isNew {
+				captiveStringReps[z.id] = true
+			}
+
 		}
 	}
 
-	for _, z := range potentialCaptives {
-		if G.countLiberties(G.stringOf[z]) == 1 {
-			capturedStrings = append(capturedStrings, G.stringOf[z])
+	for z := range captiveStringReps {
+		myStoneString := G.stringOf[z]
+		if G.countLiberties(myStoneString) == 1 {
+			capturedStrings = append(capturedStrings, myStoneString)
 		}
 	}
+
 	return capturedStrings
 }
 
@@ -180,9 +208,11 @@ func computeNextChromaticStrings(current chromaticStrings,
 	capt []stoneString, subsumed []stoneString, new_ stoneString,
 ) chromaticStrings {
 	for _, str := range capt {
+		fmt.Println("Debug: Deleting captured stones")
 		current.deleteStones(str)
 	}
 	for _, str := range subsumed {
+		fmt.Println("Debug: Deleting subsumed stones")
 		current.deleteStones(str)
 	}
 	current.addStones(new_)

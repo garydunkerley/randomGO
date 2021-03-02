@@ -16,6 +16,10 @@ func getEmptyNodes(gg GoGraph) map[*node]bool {
 			emptyNodes[z] = true
 		}
 	}
+	fmt.Println("The empty nodes are: ")
+	for i := range emptyNodes {
+		fmt.Println(i.id)
+	}
 	return emptyNodes
 }
 
@@ -48,7 +52,6 @@ func getEmptyClique(n *node) (emptyClique map[*node]bool) {
 	} else {
 		fmt.Println("Error (getEmptyClique): Node is not empty.")
 	}
-
 	return accountedFor
 
 }
