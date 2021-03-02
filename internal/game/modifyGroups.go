@@ -1,7 +1,7 @@
 package game
 
 import (
-	"fmt"
+//	"fmt"
 )
 
 //TODO: Jobs for preparing a move.
@@ -97,12 +97,8 @@ func countCaptures(capt []stoneString) int {
 func (s *boardState) setKoPoint(inputID int, newString stoneString, capt []stoneString) {
 	var setKo simpleKo
 	if countCaptures(capt) == 1 {
-		fmt.Println("Debug: Capt has length 1")
 		if len(newString.stones) == 1 {
-			fmt.Println("Debug: new string has only one stone")
-			fmt.Println("The group has ", s.GoGraph.countLiberties(newString), " liberties.")
 			if s.GoGraph.countLiberties(newString) == 1 {
-				fmt.Println("Debug: Ko point detected!")
 				setKo.hasKo = true
 				setKo.koPoint = getLiberties(s.GoGraph.nodes[inputID])[0]
 			} else {
@@ -120,33 +116,6 @@ func (s *boardState) setKoPoint(inputID int, newString stoneString, capt []stone
 	s.history.koHistory = append(s.history.koHistory, setKo)
 	return
 }
-
-// findCapturedLiberties takes each captured group and looks at its stones.
-// If a given stone has a neighbor of the opposite color, then we
-// append the nodeid of the captured stone to a list
-// associated with the stoneString of the enemy neighbor.
-// Wrapped by computeNewString.
-// TODO finish deprecation
-/*
-func (G GoGraph) findCapturedLiberties(capt []stoneString) map[stoneString][]int {
-	capturedLiberties := make([]stoneString)
-	var captors []int
-	// for each captured group
-	for key := range capt { // and for each stone in this captured group
-		for id := range key.stones { // look at its enemy neighbors
-			captive := G.nodes[id]
-			captors = getOppColorNeighbors(captive)
-			// if there are any, append the nodeid of the captive
-			// to the list of new liberties for the stoneString of the enemy neighbor
-			for _, cid := range captors {
-				capturedLiberties[G.stringOf[cid]] = append(
-					capturedLiberties[G.stringOf[cid]], captive.id)
-			}
-		}
-	}
-	return capturedLiberties
-}
-*/
 
 // mergeSubsumed uses a node id and subsumed strings
 // to generate the new stoneString resulting from the given move.
@@ -184,21 +153,6 @@ func (G *GoGraph) computeNewString(
 	return new_
 }
 
-//next stringOf table: update stones in new string and captured strings
-/*
-	//deprecate: don't need to return stringOf
-	newStringOf = G.StringOf
-	for stoneID := range new_.stones {
-		newStringOf[stoneID] = new_
-	}
-	for str := range capt {
-		for stoneID := range str.stones {
-			delete(newStringOf, stoneID)
-		}
-	}
-	return new_, newStringOf
-*/
-
 // computeNextChromaticStrings take the current strings and all the deltas
 // and returns the strings for next turn, as a chromaticStrings object.
 // It removes captured strings from the opponent's side,
@@ -208,11 +162,9 @@ func computeNextChromaticStrings(current chromaticStrings,
 	capt []stoneString, subsumed []stoneString, new_ stoneString,
 ) chromaticStrings {
 	for _, str := range capt {
-		fmt.Println("Debug: Deleting captured stones")
 		current.deleteStones(str)
 	}
 	for _, str := range subsumed {
-		fmt.Println("Debug: Deleting subsumed stones")
 		current.deleteStones(str)
 	}
 	current.addStones(new_)

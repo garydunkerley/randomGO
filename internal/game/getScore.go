@@ -123,7 +123,6 @@ func getNaiveScore(gg GoGraph) (float64, float64) {
 				continue
 			}
 			for n := range emptyClique {
-				fmt.Println(n)
 				accountedFor[n] = true
 			}
 		}
