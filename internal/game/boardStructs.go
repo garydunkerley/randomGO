@@ -8,11 +8,9 @@ import (
 // Every node should have a distinct integer id,
 // ranging from 0 to (# nodes - 1)
 type node struct {
-	name      string // deprecating unless there is a reason to care
 	id        int
 	neighbors []*node
-	color     int8        // color is 0 for empty, 1 for black, 2 for white
-	group     stoneString // deprecating: is a part of a given stone group
+	color     int8 // color is 0 for empty, 1 for black, 2 for white
 }
 
 // stoneString represents a contiguous string of stones.
@@ -20,6 +18,7 @@ type stoneString struct {
 	stones    map[int]bool // what stones are in here? Need to make all empty if group dies
 	liberties map[int]bool // deprecating: we have decided just to compute liberties as needed.
 	color     int8         // color is 0 for empty, 1 for black, 2 for white
+	state     string       // to be used for scoring. Current states are "alive", "dead", and "seki"
 }
 
 // chromaticStrings represents two sets of stoneStrings, one per color
@@ -27,6 +26,28 @@ type stoneString struct {
 type chromaticStrings struct {
 	black []stoneString
 	white []stoneString
+}
+
+// boardTop stores the information to construct a game board.
+type boardTop struct {
+	edges       map[int][]int
+	nodeCount   int            // We have node ids in the range [0, nodeCount - 1]
+	coords      map[[2]int]int // optional, for boards with nice 2d representations
+	coordBounds []int          // optional, for example, [9,9] for a 9 by 9 board
+}
+
+// GoGraph holds board topology and maps node IDs to their strings and *nodes.
+type GoGraph struct {
+	nodes    map[int]*node
+	stringOf map[int]stoneString // Maps node ID to its containing string
+	boardTop
+}
+
+// boardState stores a current game state, including history
+type boardState struct {
+	GoGraph
+	status
+	history
 }
 
 // addStones adds the given string to the appropriate color complex,
@@ -122,28 +143,6 @@ func mapKeysEqual(map1 map[int]bool, map2 map[int]bool) bool {
 		}
 	}
 	return true
-}
-
-// boardTop stores the information to construct a game board.
-type boardTop struct {
-	edges       map[int][]int
-	nodeCount   int            // We have node ids in the range [0, nodeCount - 1]
-	coords      map[[2]int]int // optional, for boards with nice 2d representations
-	coordBounds []int          // optional, for example, [9,9] for a 9 by 9 board
-}
-
-// GoGraph holds board topology and maps node IDs to their strings and *nodes.
-type GoGraph struct {
-	nodes    map[int]*node
-	stringOf map[int]stoneString // Maps node ID to its containing string
-	boardTop
-}
-
-// boardState stores a current game state, including history
-type boardState struct {
-	GoGraph
-	status
-	history
 }
 
 // status tracks current turn and if the game is currently active

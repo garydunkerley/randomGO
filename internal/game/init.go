@@ -45,3 +45,12 @@ func initBoardState(a boardTop, komi int) (X boardState) {
 	X.history.koHistory = append(X.history.koHistory, simpleKo{hasKo: false, koPoint: -1})
 	return X
 }
+
+func initXEnclosedRegion(region map[*node]bool, color int8) xEnclosedRegion {
+	var newXEnclosure xEnclosedRegion
+
+	newXEnclosure.region = region
+	newXEnclosure.boundaryColor = color
+
+	return newXEnclosure
+}
