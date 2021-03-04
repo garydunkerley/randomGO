@@ -194,6 +194,11 @@ type moveInput struct {
 	isPass      bool // True if the player passed. Intentional redundancy: if node ID is -1, isPass is true.
 }
 
+type xEnclosedRegion struct {
+	region        map[*node]bool
+	boundaryColor int8
+}
+
 // addMoveAndStrings updates a history with the given move and computed group slice.
 // It is assumed that the move is a legal move, and it is not a pass.
 // It does not check legality of the move. Called by playMoveInput.
