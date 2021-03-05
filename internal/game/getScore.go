@@ -4,8 +4,6 @@ import (
 	"fmt"
 )
 
-// TODO:
-
 /*
 NOTE
 A scoring algorithm needs to be able to locate x-enclosed regions and then determine whether the blocks that comprise the boundary of these regions are healthy or not.
@@ -133,103 +131,50 @@ func (gg GoGraph) inMexicanStandOff(myString stoneString) (bool, []stoneString) 
 
 	// if my stoneString has two liberties
 	if len(myString.liberties) == 2 {
+
+		accountedFor := make(map[*node]bool)
 		// then for each stone in the string, look a neighbor of the opposite color and check to see if it also has two liberties and at least one is shared
-		duelDiscovered := false
 
 		for i := range myString.stones {
 			for _, n := range gg.nodes[i].neighbors {
-				if n.color != myString.color && n.color != 0 {
+				if n.color != myString.color && n.color != 0 && !accountedFor[n] {
+
 					potentialDuelist := gg.stringOf[n.id]
 					if len(potentialDuelist.liberties) == 2 {
 						for z := range potentialDuelist.liberties {
 							if myString.liberties[z] {
 								duelists = append(duelists, myString)
 								duelists = append(duelists, potentialDuelist)
-								duelDiscovered = true
-								break
+								return true, duelists
 							}
 						}
 					}
+					accountedFor[n] = true
 				}
 
-				if duelDiscovered {
-					break
-
-				}
-
-			}
-			if duelDiscovered {
-				break
 			}
 
 		}
-
-		if duelDiscovered {
-			// if we find that there is a mexican standoff between two stoneStrings,
-			// then we check to see if there are nearby stone strings that are also
-			// implicated in the standoff
-			stillSearching := true
-			counter := 0
-			accountedFor := make(map[*node]bool)
-			var newPotentialDuelist stoneString
-
-			oldDuelists := duelists
-
-			// TODO: remove counter when it has been determined it won't run forever
-			for stillSearching && counter < 1000 {
-
-				newDuelistRep := make(map[*node]bool)
-				var newDuelists []stoneString
-
-				for _, i := range oldDuelists {
-					for l := range i.liberties {
-						for _, n := range gg.nodes[l].neighbors {
-							if n.color == i.color && !(mapKeysEqual(i.stones, gg.stringOf[n.id].stones)) && accountedFor[n] == false {
-								newPotentialDuelist = gg.stringOf[n.id]
-								if len(newPotentialDuelist.liberties) == 2 {
-									newDuelistRep[n] = true
-									for z := range newPotentialDuelist.stones {
-										accountedFor[gg.nodes[z]] = true
-									}
-
-								}
-
-							}
-						}
-					}
-				}
-				if len(newDuelistRep) < 1 {
-					stillSearching = false
-				} else {
-					for z := range newDuelistRep {
-						newDuelists = append(newDuelists, gg.stringOf[z.id])
-					}
-					for _, z := range newDuelists {
-						duelists = append(duelists, z)
-					}
-					oldDuelists = newDuelists
-				}
-				// TODO: remove counter
-				counter += 1
-			}
-		}
-		return true, duelists
 	}
 	return false, duelists
 }
 
-func (cs chromaticStrings) getDeadandSeki(gg GoGraph, myMap map[*node]xEnclosedRegion) {
+// getSimpleDeadandSeki takes a GoGraph and a map assigning emptynodes to their xEnclosedRegions and determines which
+// stoneStrings can be immediately ruled as dead and those occupying a type of seki we have termed
+// a "Mexican standoff". Determining more sophistacted dead and seki (those strings whose status depends on another string)
+// is dealt with in the getDependents function
+func (cs chromaticStrings) getSimpleDeadandSeki(gg GoGraph, myMap map[*node]xEnclosedRegion) {
 
 	for _, myString := range cs.black {
 		accountedFor := make(map[*node]bool)
-		xEnclosedLibs := 0
+		xEnclosedRegions := 0
 
 		if myString.state == "" {
 			for l := range myString.liberties {
 				if accountedFor[gg.nodes[l]] == false {
 					newXEnclosure := myMap[gg.nodes[l]]
 					if newXEnclosure.boundaryColor == 1 {
-						xEnclosedLibs += len(newXEnclosure.region)
+						xEnclosedRegions += 1
 					}
 					for n := range newXEnclosure.region {
 						accountedFor[n] = true
@@ -237,7 +182,7 @@ func (cs chromaticStrings) getDeadandSeki(gg GoGraph, myMap map[*node]xEnclosedR
 
 				}
 			}
-			if xEnclosedLibs < 2 {
+			if xEnclosedRegions < 2 {
 				isSeki, duelists := gg.inMexicanStandOff(myString)
 				if isSeki {
 					for _, i := range duelists {
@@ -252,14 +197,14 @@ func (cs chromaticStrings) getDeadandSeki(gg GoGraph, myMap map[*node]xEnclosedR
 
 	for _, myString := range cs.white {
 		accountedFor := make(map[*node]bool)
-		xEnclosedLibs := 0
+		xEnclosedRegions := 0
 
 		if myString.state == "" {
 			for l := range myString.liberties {
 				if accountedFor[gg.nodes[l]] == false {
 					newXEnclosure := myMap[gg.nodes[l]]
 					if newXEnclosure.boundaryColor == 2 {
-						xEnclosedLibs += len(newXEnclosure.region)
+						xEnclosedRegions += 1
 					}
 					for n := range newXEnclosure.region {
 						accountedFor[n] = true
@@ -267,7 +212,7 @@ func (cs chromaticStrings) getDeadandSeki(gg GoGraph, myMap map[*node]xEnclosedR
 
 				}
 			}
-			if xEnclosedLibs < 2 {
+			if xEnclosedRegions < 2 {
 				isSeki, duelists := gg.inMexicanStandOff(myString)
 				if isSeki {
 					for _, i := range duelists {
@@ -283,47 +228,221 @@ func (cs chromaticStrings) getDeadandSeki(gg GoGraph, myMap map[*node]xEnclosedR
 	return
 }
 
-/*
+// getDependents takes a GoGrah, a map connecting nodes and xEnclosedRegions, and a state ("dead" or "seki" or "alive")
+func (cs chromaticStrings) getDependents(gg GoGraph, myMap map[*node]xEnclosedRegion, state string) {
 
-// TODO build on this so that it can actually account for shit like dead groups, seki, etc.
-func getNaiveScoreSuggestion(gg GoGraph) (float64, float64) {
+	var stateBlackStrings []*stoneString
+	var stateWhiteStrings []*stoneString
 
-	var graphWithoutDead GoGraph
+	for _, myString := range cs.black {
+		stringPointer := &myString
+		if stringPointer.state == state {
+			stateBlackStrings = append(stateBlackStrings, stringPointer)
+		}
+	}
 
-	var whiteNaive float64
-	var blackNaive float64
-	whiteNaive = 0
-	blackNaive = 0
+	for _, myString := range cs.white {
+		stringPointer := &myString
+		if myString.state == state {
+			stateWhiteStrings = append(stateWhiteStrings, stringPointer)
+		}
+	}
 
-	myScoringMap := getAllXEnclosedRegions(gg)
+	// We first get all dependent dead / seki for black
 
+	stillSearching := true
+	counter := 0
 	accountedFor := make(map[*node]bool)
 
+	// We record all the stones that already belong to
+	// stoneStrings that are dead / seki
 
+	for _, strings := range stateBlackStrings {
+		for i := range strings.stones {
+			accountedFor[gg.nodes[i]] = true
+		}
+	}
 
-	emptyNodes := getEmptyNodes(gg)
+	for stillSearching && counter < 1000 {
+		var newState []stoneString
+		for _, myString := range stateBlackStrings {
 
-	//
-	for z := range emptyNodes {
-		if accountedFor[z] == true {
-			continue
-		} else {
-			emptyClique := getEmptyClique(z)
-			color, points := getScoreAssignment(emptyClique)
-			if color == "black" {
-				blackNaive += float64(points)
-			} else if color == "white" {
-				whiteNaive += float64(points)
-			} else {
-				continue
-			}
-			for n := range emptyClique {
-				accountedFor[n] = true
+			// for each liberty of the dead string
+			for L := range myString.liberties {
+
+				// get the xenclosed region of this liberty
+				xEnclosed := myMap[gg.nodes[L]]
+				color := xEnclosed.boundaryColor
+				// region := xEnclosed.region
+				// if it is in fact xenclosed
+				if color == 1 {
+					// iterate over neighbors until you find a black node
+
+					for _, n := range gg.nodes[L].neighbors {
+						if !accountedFor[n] && n.color == 1 && gg.stringOf[n.id].state == "" {
+							if len(gg.stringOf[n.id].liberties) == 2 {
+								newState = append(newState, gg.stringOf[n.id])
+
+								for q := range gg.stringOf[n.id].stones {
+									accountedFor[gg.nodes[q]] = true
+
+								}
+
+							}
+						}
+					}
+
+				}
 			}
 		}
 
+		if len(newState) < 1 {
+			stillSearching = false
+		}
+		// add the newly found stoneStrings to the pile
+		for _, i := range newState {
+			newPointer := &i
+			stateBlackStrings = append(stateBlackStrings, newPointer)
+		}
+
+		counter += 1
+
 	}
-	return whiteNaive, blackNaive
+
+	// We now repeat the process for white
+
+	stillSearching = true
+	counter = 0
+
+	// We record all the stones that already belong to
+	// stoneStrings having a particular state
+	for _, strings := range stateWhiteStrings {
+		for i := range strings.stones {
+			accountedFor[gg.nodes[i]] = true
+		}
+	}
+
+	for stillSearching && counter < 1000 {
+		var newState []stoneString
+		for _, myString := range stateWhiteStrings {
+
+			// for each liberty of the dead string
+			for L := range myString.liberties {
+
+				// get the xenclosed region of this liberty
+				xEnclosed := myMap[gg.nodes[L]]
+				color := xEnclosed.boundaryColor
+				// region := xEnclosed.region
+
+				// if it is in fact xenclosed
+				if color == 2 {
+					// iterate over neighbors until you find a white node
+					// whose associated string
+					// 1. has not been visited yet
+					// 2. has not been assigned a state
+
+					for _, n := range gg.nodes[L].neighbors {
+						if accountedFor[n] == false && n.color == 2 && gg.stringOf[n.id].state == "" {
+							if len(gg.stringOf[n.id].liberties) == 2 {
+								newState = append(newState, gg.stringOf[n.id])
+
+								for q := range gg.stringOf[n.id].stones {
+									accountedFor[gg.nodes[q]] = true
+
+								}
+
+							}
+						}
+					}
+
+				}
+			}
+		}
+		if len(newState) < 1 {
+			stillSearching = false
+		}
+		// add the newly found stoneStrings to the pile
+		for _, i := range newState {
+			newString := &i
+			stateWhiteStrings = append(stateWhiteStrings, newString)
+		}
+
+		counter += 1
+
+	}
+
+	// hopefully, because we are using slices of
+	// pointers, it will update the copies that are
+	// found in chromatic strings.
+	for _, z := range stateBlackStrings {
+		z.state = state
+	}
+	for _, z := range stateWhiteStrings {
+		z.state = state
+	}
+
+	return
+}
+
+func cleanerBoard(gg GoGraph, cs chromaticStrings) (GoGraph, map[*node]bool, map[*node]bool) {
+
+	cleanBoard := gg
+
+	deadBlackStones := make(map[*node]bool)
+
+	deadWhiteStones := make(map[*node]bool)
+
+	for _, strings := range cs.black {
+		if strings.state == "dead" {
+			for z := range strings.stones {
+				deadBlackStones[gg.nodes[z]] = true
+			}
+		}
+	}
+	for _, strings := range cs.white {
+		if strings.state == "dead" {
+			for z := range strings.stones {
+				deadWhiteStones[gg.nodes[z]] = true
+			}
+		}
+	}
+
+	for z := range deadBlackStones {
+		cleanBoard.nodes[z.id].color = 0
+	}
+
+	for z := range deadWhiteStones {
+		cleanBoard.nodes[z.id].color = 0
+	}
+	return cleanBoard, deadBlackStones, deadWhiteStones
 
 }
-*/
+
+// getNewGoGraph takes
+func getNaiveScoreSuggestion(gg GoGraph, cs chromaticStrings) (float64, float64) {
+
+	var blackScore float64
+	var whiteScore float64
+
+	myMap := getAllXEnclosedRegions(gg)
+	cs.getSimpleDeadandSeki(gg, myMap)
+	cs.getDependents(gg, myMap, "dead")
+	cs.getDependents(gg, myMap, "seki")
+
+	cleanBoard, deadBlackStones, deadWhiteStones := cleanerBoard(gg, cs)
+
+	newEmpties := getEmptyNodes(cleanBoard)
+	newMap := getAllXEnclosedRegions(cleanBoard)
+
+	for z := range newEmpties {
+		if newMap[z].boundaryColor == 1 {
+			blackScore += 1
+		} else if newMap[z].boundaryColor == 2 {
+			whiteScore += 1
+		}
+	}
+	blackScore += float64(len(deadBlackStones))
+	whiteScore += float64(len(deadWhiteStones))
+
+	return blackScore, whiteScore
+}
