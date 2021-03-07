@@ -18,6 +18,23 @@ type nodeStoneTranslation struct {
 }
 */
 
+func getDeadNodes(gg GoGraph, cs chromaticStrings) map[*node]bool {
+	dead := make(map[*node]bool)
+
+	for _, i := range cs.black {
+		for j := range i.stones {
+			dead[gg.nodes[j]] = true
+		}
+	}
+	for _, i := range cs.white {
+		for j := range i.stones {
+			dead[gg.nodes[j]] = true
+		}
+	}
+	return dead
+
+}
+
 func getWorkingDirectory() string {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -27,8 +44,7 @@ func getWorkingDirectory() string {
 }
 
 // initStone takes a *node (see boardStructs.go) and initializes a graphviz *Node
-func initStone(myNode *node, g *cgraph.Graph) *cgraph.Node {
-
+func initStone(myNode *node, g *cgraph.Graph, dead map[*node]bool) *cgraph.Node {
 	stone, err := g.CreateNode(strconv.Itoa(myNode.id))
 	if err != nil {
 		log.Fatal(err)
@@ -41,9 +57,17 @@ func initStone(myNode *node, g *cgraph.Graph) *cgraph.Node {
 	if myNode.color == 0 {
 		stone.SetFillColor("blanchedalmond")
 	} else if myNode.color == 1 {
-		stone.SetFillColor("black")
+		if dead[myNode] {
+			stone.SetFillColor("grey1")
+		} else {
+			stone.SetFillColor("black")
+		}
 	} else {
-		stone.SetFillColor("white")
+		if dead[myNode] {
+			stone.SetFillColor("grey100")
+		} else {
+			stone.SetFillColor("white")
+		}
 	}
 	stone.SetFontSize(0)
 
@@ -51,14 +75,14 @@ func initStone(myNode *node, g *cgraph.Graph) *cgraph.Node {
 }
 
 // constructAllStones iterates over the stones in a GoGraph, initializes their stones (associated *Node structs from graphviz) andconstructs a map relating GoGraph *nodes to graphviz *Nodes
-func constructAllStones(gg GoGraph, g *cgraph.Graph) map[*node]*cgraph.Node {
+func constructAllStones(gg GoGraph, g *cgraph.Graph, dead map[*node]bool) map[*node]*cgraph.Node {
 	transChart := make(map[*node]*cgraph.Node)
 
 	// for each node in our GoGraph, we initialize a stone
 	// and create a map assignment relating GoGraph *nodes
 	// to graphviz *Nodes
 	for i := 0; i < len(gg.nodes); i++ {
-		transChart[gg.nodes[i]] = initStone(gg.nodes[i], g)
+		transChart[gg.nodes[i]] = initStone(gg.nodes[i], g, dead)
 	}
 	return transChart
 
@@ -99,28 +123,7 @@ func constructAllEdges(gg GoGraph, t map[*node]*cgraph.Node, g *cgraph.Graph) {
 	return
 }
 
-/*
-// initEdges takes a GoGraph node pointer and our struct associating these node pointers to graphviz Nodes to construct an edge connecting each neighbor
-func initEdges(n *node, t map[*node]*cgraph.Node, g *cgraph.Graph) {
-	s1 := t[n]
-	var s2 *cgraph.Node
-	for z := range n.neighbors {
-		s2 = t[z]
-		edge, err := g.CreateEdge("some_name", s1, s2)
-		if err != nil {
-			log.Fatal(err)
-		}
-		edge.SetArrowHead("none")
-	}
-
-	return
-}
-
-*/
-
-func visualizeBoard(gg GoGraph, isRandom bool) {
-
-	var trans map[*node]*cgraph.Node
+func visualizeBoard(gg GoGraph, isRandom bool, dead map[*node]bool) {
 
 	cwd := getWorkingDirectory()
 
@@ -147,7 +150,7 @@ func visualizeBoard(gg GoGraph, isRandom bool) {
 		// g.Close
 	}()
 
-	trans = constructAllStones(gg, graph)
+	trans := constructAllStones(gg, graph, dead)
 	constructAllEdges(gg, trans, graph)
 
 	var buf bytes.Buffer
@@ -160,5 +163,6 @@ func visualizeBoard(gg GoGraph, isRandom bool) {
 		log.Fatal(err)
 	}
 	open.Run(cwd + "/board.png")
+	return
 
 }

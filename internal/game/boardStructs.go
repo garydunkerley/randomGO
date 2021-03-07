@@ -84,7 +84,6 @@ func (c *chromaticStrings) addStones(newString stoneString) {
 // Causes panic if the string has a color other than 1 or 2.
 // Causes panic if it attempts to delete a nonexistent value.
 func (c *chromaticStrings) deleteStones(newString stoneString) {
-	fmt.Println("deleteStones is being called ")
 
 	var current []stoneString
 
@@ -98,8 +97,6 @@ func (c *chromaticStrings) deleteStones(newString stoneString) {
 		panic("bad color")
 	}
 
-	fmt.Println("The string to delete is: ", newString)
-
 	// fmt.Println("White has ", len(current), " stone groups")
 	fmt.Println(successFlag)
 	// Check for duplication
@@ -107,7 +104,6 @@ func (c *chromaticStrings) deleteStones(newString stoneString) {
 	for i := 0; i < len(current); i++ {
 		// fmt.Println(current[i], " is an old string")
 		if mapKeysEqual(newString.stones, current[i].stones) {
-			fmt.Println("Debug: Match found!")
 			// There's room to optimize the deletion at expense of order
 			successFlag = true
 			//if len(current) > 1 {
@@ -245,7 +241,7 @@ func (s *boardState) playMoveInput(input moveInput) error {
 	subsumed := s.getSubsumedStrings(nodeID, color)
 
 	capt := s.getCapturedStrings(nodeID, color)
-	fmt.Println("The number of captured stone groups is ", len(capt))
+	fmt.Println("Debug (boardStructs line 248): the captured strings are ", capt)
 	//Note that the liberties of these strings do not account for captures yet.
 	//It's just the old strings, before the move is played.
 	newString := s.computeNewString(subsumed, input)
@@ -256,6 +252,7 @@ func (s *boardState) playMoveInput(input moveInput) error {
 		last = s.allStoneStrings[L-1]
 	}
 	next := computeNextChromaticStrings(last, capt, subsumed, newString)
+
 	m := move{
 		moveInput:    input,
 		capturesMade: countCaptures(capt),
@@ -264,8 +261,20 @@ func (s *boardState) playMoveInput(input moveInput) error {
 
 	s.boardUpdate(m, subsumed, capt, newString)
 
+	/*
+
+		a := s.history.allStoneStrings[len(s.history.allStoneStrings)-1]
+
+		currentCS := &a
+		currentCS.assignAllLiberties(s.GoGraph)
+	*/
+
 	// locates and documents ko points, if any exist.
 	s.setKoPoint(nodeID, newString, capt)
+
+	// TODO: delete this as it's for debugging
+	fmt.Println("Debug: The stone strings that currently exist are:")
+	fmt.Println(s.history.allStoneStrings[len(s.history.allStoneStrings)-1])
 
 	return nil
 }

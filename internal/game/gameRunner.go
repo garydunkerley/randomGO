@@ -124,6 +124,11 @@ func promptNodeID(prompt promptui.Prompt, coo map[[2]int]int, nodeCount int) int
 // and runs a local CLI game.
 func (gameState *boardState) runGame(isRandom bool) {
 	coo, nodeCount := gameState.coords, gameState.nodeCount
+
+	//var blackScore float64
+	//var whiteScore float64
+	//	dead := make(map[*node]bool)
+
 	prompt := promptRect()
 	gameState.ongoing = true
 
@@ -160,11 +165,16 @@ func (gameState *boardState) runGame(isRandom bool) {
 		}
 
 		// This should force an image of the board to come up.
-		// visualizeBoard(gameState.GoGraph, isRandom)
+		//		visualizeBoard(gameState.GoGraph, isRandom, dead)
 	}
 	/*
-		whiteNaive, blackNaive := getNaiveScore(gameState.GoGraph)
-		fmt.Printf("Final score: \nWhite: %v\nBlack: %v\n", float64(gameState.whitePoints)+whiteNaive, float64(gameState.blackPoints)+blackNaive)
+		ass := gameState.history.allStoneStrings
+		cs := ass[len(ass)-1]
+
+		blackScore, whiteScore, dead = getNaiveScoreSuggestion(gameState.GoGraph, cs)
+		fmt.Println("I think the score should be: ")
+		fmt.Println("Black:", blackScore)
+		fmt.Println("White:", whiteScore)
 	*/
 }
 

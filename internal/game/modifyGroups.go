@@ -1,7 +1,7 @@
 package game
 
 import (
-//	"fmt"
+	"fmt"
 )
 
 //TODO: Jobs for preparing a move.
@@ -25,6 +25,7 @@ func (G GoGraph) getSubsumedStrings(nodeID int, color int8) []stoneString {
 	var isNew bool
 
 	var mergeCandidates []stoneString
+
 	mergeStringReps := make(map[int]bool)
 
 	for _, z := range G.nodes[nodeID].neighbors {
@@ -41,8 +42,9 @@ func (G GoGraph) getSubsumedStrings(nodeID int, color int8) []stoneString {
 			}
 		}
 	}
-
+	fmt.Println("Debug: Our merge representatives are: ")
 	for z := range mergeStringReps {
+		fmt.Println(z)
 		mergeCandidates = append(mergeCandidates, G.stringOf[z])
 	}
 
@@ -76,9 +78,14 @@ func (G GoGraph) getCapturedStrings(nodeID int, color int8) []stoneString {
 
 	for z := range captiveStringReps {
 		myStoneString := G.stringOf[z]
-		if G.countLiberties(myStoneString) == 1 {
-			capturedStrings = append(capturedStrings, myStoneString)
+		if len(myStoneString.liberties) == 1 {
+			for s := range myStoneString.liberties {
+				if s == nodeID {
+					capturedStrings = append(capturedStrings, myStoneString)
+				}
+			}
 		}
+
 	}
 
 	return capturedStrings
@@ -91,6 +98,51 @@ func countCaptures(capt []stoneString) int {
 		sum += len(string_.stones)
 	}
 	return sum
+}
+
+// assignAllLiberties looks at all stoneStrings, determines their liberties, and then assigns
+// them to the stoneString
+func (cs *chromaticStrings) assignAllLiberties(gg GoGraph) {
+
+	blackStrings := cs.black
+	whiteStrings := cs.white
+
+	for _, b := range blackStrings {
+		accountedFor := make(map[int]bool)
+		newLibs := make(map[int]bool)
+
+		for s := range b.stones {
+			for n := range gg.nodes[s].neighbors {
+				if accountedFor[n] == false && gg.nodes[n].color == 1 {
+					newLibs[n] = true
+					accountedFor[n] = true
+				} else {
+					accountedFor[n] = true
+				}
+			}
+		}
+		b.liberties = newLibs
+	}
+
+	for _, w := range whiteStrings {
+		accountedFor := make(map[int]bool)
+		newLibs := make(map[int]bool)
+
+		for s := range w.stones {
+			for n := range gg.nodes[s].neighbors {
+				if accountedFor[n] == false && gg.nodes[n].color == 1 {
+					newLibs[n] = true
+					accountedFor[n] = true
+				} else {
+					accountedFor[n] = true
+				}
+			}
+		}
+		w.liberties = newLibs
+	}
+
+	return
+
 }
 
 // getKoPoints takes the outputs of computeNewString and getCapturedStrings to determine whether a given play produces a ko point, which will prevent the player from playing in that position next turn.
@@ -122,7 +174,9 @@ func (s *boardState) setKoPoint(inputID int, newString stoneString, capt []stone
 // Wrapped by computeNewString.
 func (G GoGraph) mergeSubsumed(id int,
 	subsumed []stoneString) (new_ stoneString) {
+
 	new_.stones = make(map[int]bool)
+	new_.liberties = make(map[int]bool)
 	new_.color = G.nodes[id].color
 	new_.stones[id] = true
 	if len(subsumed) == 0 { // Case: no friendly neighbors.
@@ -132,7 +186,13 @@ func (G GoGraph) mergeSubsumed(id int,
 		for stoneID := range string_.stones { // Add all stones
 			new_.stones[stoneID] = true
 		}
+		for n := range string_.liberties {
+			if n != id {
+				new_.liberties[n] = true
+			}
+		}
 	}
+
 	return new_
 }
 
@@ -147,10 +207,31 @@ func (G *GoGraph) computeNewString(
 		node.color = 0
 		return
 	}()
+	newLibs := make(map[int]bool)
+
 	node := G.nodes[m.id]
 	node.color = m.playerColor //temporarily color a node
 	new_ = G.mergeSubsumed(m.id, subsumed)
+	newLibs = new_.liberties
+	for _, n := range G.nodes[m.id].neighbors {
+		if G.nodes[n.id].color == 0 {
+			newLibs[n.id] = true
+
+			// if you find an enemy node, remove the
+			// player's move input from its list of liberties
+		} else if G.nodes[n.id].color != m.playerColor && G.nodes[n.id].color != 0 {
+			removeLib := make(map[int]bool)
+			oldEnemyString := G.stringOf[n.id]
+			removeLib = oldEnemyString.liberties
+			delete(removeLib, m.id)
+
+			oldEnemyString.liberties = removeLib
+		}
+
+	}
+	new_.liberties = newLibs
 	return new_
+
 }
 
 // computeNextChromaticStrings take the current strings and all the deltas

@@ -126,8 +126,8 @@ func getAllXEnclosedRegions(gg GoGraph) map[*node]xEnclosedRegion {
 // and so the best choice for both players is to allow everything to stand.
 // If two stonestrings are found to be in a Mexican standoff, we then check nearby stone strings to see
 // if they are alo implicated
-func (gg GoGraph) inMexicanStandOff(myString stoneString) (bool, []stoneString) {
-	var duelists []stoneString
+func (gg GoGraph) inMexicanStandOff(myString *stoneString) (bool, []*stoneString) {
+	var duelists []*stoneString
 
 	// if my stoneString has two liberties
 	if len(myString.liberties) == 2 {
@@ -139,7 +139,8 @@ func (gg GoGraph) inMexicanStandOff(myString stoneString) (bool, []stoneString) 
 			for _, n := range gg.nodes[i].neighbors {
 				if n.color != myString.color && n.color != 0 && !accountedFor[n] {
 
-					potentialDuelist := gg.stringOf[n.id]
+					a := gg.stringOf[n.id]
+					potentialDuelist := &a
 					if len(potentialDuelist.liberties) == 2 {
 						for z := range potentialDuelist.liberties {
 							if myString.liberties[z] {
@@ -165,7 +166,8 @@ func (gg GoGraph) inMexicanStandOff(myString stoneString) (bool, []stoneString) 
 // is dealt with in the getDependents function
 func (cs chromaticStrings) getSimpleDeadandSeki(gg GoGraph, myMap map[*node]xEnclosedRegion) {
 
-	for _, myString := range cs.black {
+	for _, a := range cs.black {
+		myString := &a
 		accountedFor := make(map[*node]bool)
 		xEnclosedRegions := 0
 
@@ -195,7 +197,8 @@ func (cs chromaticStrings) getSimpleDeadandSeki(gg GoGraph, myMap map[*node]xEnc
 		}
 	}
 
-	for _, myString := range cs.white {
+	for _, a := range cs.white {
+		myString := &a
 		accountedFor := make(map[*node]bool)
 		xEnclosedRegions := 0
 
@@ -419,10 +422,12 @@ func cleanerBoard(gg GoGraph, cs chromaticStrings) (GoGraph, map[*node]bool, map
 }
 
 // getNewGoGraph takes
-func getNaiveScoreSuggestion(gg GoGraph, cs chromaticStrings) (float64, float64) {
+func getNaiveScoreSuggestion(gg GoGraph, cs chromaticStrings) (float64, float64, map[*node]bool) {
 
 	var blackScore float64
 	var whiteScore float64
+
+	dead := make(map[*node]bool)
 
 	myMap := getAllXEnclosedRegions(gg)
 	cs.getSimpleDeadandSeki(gg, myMap)
@@ -441,8 +446,16 @@ func getNaiveScoreSuggestion(gg GoGraph, cs chromaticStrings) (float64, float64)
 			whiteScore += 1
 		}
 	}
+
+	for z := range deadWhiteStones {
+		dead[z] = true
+	}
+	for z := range deadBlackStones {
+		dead[z] = true
+	}
+
 	blackScore += float64(len(deadBlackStones))
 	whiteScore += float64(len(deadWhiteStones))
 
-	return blackScore, whiteScore
+	return blackScore, whiteScore, dead
 }
