@@ -6,6 +6,7 @@ We would also like to test existing Go algorithms in this setting to see how the
 
 # TODO
 
- - Create graphical interface for random graphs
- - Create netcode for online games
+ - Modify random graph generation function so that all graphs are guaranteed to be planar. 
+ - Create an algorithm for visualizing our random planar graph without singularities.
+ - Develop protocol to allow playing over a network.
 
