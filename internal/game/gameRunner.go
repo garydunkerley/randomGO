@@ -125,9 +125,9 @@ func promptNodeID(prompt promptui.Prompt, coo map[[2]int]int, nodeCount int) int
 func (gameState *boardState) runGame(isRandom bool) {
 	coo, nodeCount := gameState.coords, gameState.nodeCount
 
-	//var blackScore float64
-	//var whiteScore float64
-	//	dead := make(map[*node]bool)
+	var blackScore float64
+	var whiteScore float64
+	// dead := make(map[*node]bool)
 
 	prompt := promptRect()
 	gameState.ongoing = true
@@ -167,15 +167,14 @@ func (gameState *boardState) runGame(isRandom bool) {
 		// This should force an image of the board to come up.
 		//		visualizeBoard(gameState.GoGraph, isRandom, dead)
 	}
-	/*
-		ass := gameState.history.allStoneStrings
-		cs := ass[len(ass)-1]
+	ass := gameState.history.allStoneStrings
+	cs := ass[len(ass)-1]
 
-		blackScore, whiteScore, dead = getNaiveScoreSuggestion(gameState.GoGraph, cs)
-		fmt.Println("I think the score should be: ")
-		fmt.Println("Black:", blackScore)
-		fmt.Println("White:", whiteScore)
-	*/
+	blackScore, whiteScore, _ = getNaiveScoreSuggestion(gameState.GoGraph, cs)
+	//	visualizeBoard(gameState.GoGraph, isRandom, dead)
+	fmt.Println("I think the score should be: ")
+	fmt.Println("Black:", blackScore)
+	fmt.Println("White:", whiteScore)
 }
 
 // moveByID is an alternate way to run a game. It is not interactive.

@@ -2,12 +2,13 @@ package game
 
 import (
 	"math/rand"
+	"strconv"
 	"time"
 )
 
 // makeRandomBoard creates a board topology on n nodes such that
 // any two nodes are connected via an edge with a fixed probability.
-func makeRandomBoard(n int, prob float64) boardTop {
+func makeNaiveRandomBoard(n int, prob float64) boardTop {
 	var ourTopology boardTop
 
 	edges := make(map[int][]int)
@@ -37,4 +38,22 @@ func makeRandomBoard(n int, prob float64) boardTop {
 	ourTopology.edges = edges
 
 	return ourTopology
+}
+
+// TODO change the names of nodes so that they are strings from which we can recover a coordinate plot.
+
+func makeRandomBoard(n int) boardTop {
+	var ourTopology boardTop
+
+	edges := make(map[string][]string)
+	existsAlready := make(map[string]bool)
+
+	ourTopology.nodeCount = n
+	layerCount := 0
+
+	for i := 0; i < n; i++ {
+		strconv.FormatFloat(0)
+		strconv.FormatFloat()
+	}
+
 }

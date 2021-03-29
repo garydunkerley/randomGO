@@ -52,13 +52,13 @@ func getEmptyRegion(n *node) map[*node]bool {
 	} else {
 		fmt.Println("Error: Node is not empty")
 	}
+
 	return accountedFor
 }
 
 // isXEnclosed takes an empty region and then determines whether the
 // boundary is uniformly colored or mixed
 func getBoundaryColor(emptyRegion map[*node]bool) int8 {
-
 	var color int8
 	var oldColor int8
 
@@ -67,17 +67,26 @@ func getBoundaryColor(emptyRegion map[*node]bool) int8 {
 	for z := range emptyRegion {
 		for _, n := range z.neighbors {
 			if n.color != 0 {
-				oldColor = color
+				// TODO: clear this fmt.Println("Debug : The oldColor is ", oldColor, " and the color is ", color)
+
 				if n.color == 1 {
 					color = 1
 				} else {
 					color = 2
 				}
-
-				if oldColor != color {
+				// check to see if the newly found
+				// boundary node has a color that
+				// differs from the last color found
+				// The second argument in the if condition
+				// accounts for our first pass over the region
+				if oldColor != color && oldColor != 0 {
+					// TODO: clear this fmt.Println("Debug (getScore.go line 79): boundary color mismatch found!")
 					sameColor = false
 					break
+				} else {
+					oldColor = color
 				}
+
 			}
 		}
 		if sameColor == false {
@@ -107,6 +116,14 @@ func getAllXEnclosedRegions(gg GoGraph) map[*node]xEnclosedRegion {
 
 			emptyRegion := getEmptyRegion(z)
 			color := getBoundaryColor(emptyRegion)
+			fmt.Println("Debug (getScore.go line 112): An empty connected region: ")
+			emptyFucker := []int{}
+			for z := range emptyRegion {
+				emptyFucker = append(emptyFucker, z.id)
+			}
+			fmt.Println(emptyFucker)
+			fmt.Println("and it has color: ", color)
+
 			newXEnclosure := initXEnclosedRegion(emptyRegion, color)
 
 			for q := range emptyRegion {
@@ -160,16 +177,30 @@ func (gg GoGraph) inMexicanStandOff(myString *stoneString) (bool, []*stoneString
 	return false, duelists
 }
 
-// getSimpleDeadandSeki takes a GoGraph and a map assigning emptynodes to their xEnclosedRegions and determines which
-// stoneStrings can be immediately ruled as dead and those occupying a type of seki we have termed
-// a "Mexican standoff". Determining more sophistacted dead and seki (those strings whose status depends on another string)
+// getSimpleDeadandSeki takes a GoGraph and a map
+// assigning emptynodes to their xEnclosedRegions
+// and determines which stoneStrings can be
+// immediately ruled as dead and those occupying
+// a type of seki we have termed a "Mexican standoff".
+// Determining more sophistacted dead and seki (those
+// strings whose status depends on another string)
 // is dealt with in the getDependents function
 func (cs chromaticStrings) getSimpleDeadandSeki(gg GoGraph, myMap map[*node]xEnclosedRegion) {
+
+	//TODO: remove db prompts
+	fmt.Println("Debug (getScore.go line 191): getSimpleDead called")
 
 	for _, a := range cs.black {
 		myString := &a
 		accountedFor := make(map[*node]bool)
 		xEnclosedRegions := 0
+
+		// db
+		stones := []int{}
+		for z := range myString.stones {
+			stones = append(stones, z)
+		}
+		fmt.Println("Debug (getScore.go line 202): We are checking ", stones, "with the getSimpleDead function")
 
 		if myString.state == "" {
 			for l := range myString.liberties {
@@ -184,7 +215,13 @@ func (cs chromaticStrings) getSimpleDeadandSeki(gg GoGraph, myMap map[*node]xEnc
 
 				}
 			}
+			// db
+			fmt.Println("Debug: we have ", xEnclosedRegions, " regions")
+
 			if xEnclosedRegions < 2 {
+				// db
+				fmt.Println("Debug (getScore line 209): The string ", stones, "of color", myString.color, "has fewer than two enclosed regions")
+
 				isSeki, duelists := gg.inMexicanStandOff(myString)
 				if isSeki {
 					for _, i := range duelists {
@@ -192,6 +229,8 @@ func (cs chromaticStrings) getSimpleDeadandSeki(gg GoGraph, myMap map[*node]xEnc
 					}
 				} else {
 					myString.state = "dead"
+					//db
+					fmt.Println("String is dead.")
 				}
 			}
 		}
@@ -231,7 +270,9 @@ func (cs chromaticStrings) getSimpleDeadandSeki(gg GoGraph, myMap map[*node]xEnc
 	return
 }
 
-// getDependents takes a GoGrah, a map connecting nodes and xEnclosedRegions, and a state ("dead" or "seki" or "alive")
+// getDependents takes a GoGraph, a map connecting
+// nodes and xEnclosedRegions, and a state
+// ("dead" or "seki" or "alive")
 func (cs chromaticStrings) getDependents(gg GoGraph, myMap map[*node]xEnclosedRegion, state string) {
 
 	var stateBlackStrings []*stoneString
