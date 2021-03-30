@@ -36,6 +36,15 @@ type boardTop struct {
 	coordBounds []int          // optional, for example, [9,9] for a 9 by 9 board
 }
 
+// enrichedBoardTop is nearly identical except that it stores coordinates
+// for mapping the nodes onto the cartesian plane
+type randomBoardTop struct {
+	edges     map[int]int
+	nodeCount int               // We have node ids in the range [0, nodeCount - 1]
+	coords    map[int][]float64 // cartesian coordinates
+
+}
+
 // GoGraph holds board topology and maps node IDs to their strings and *nodes.
 type GoGraph struct {
 	nodes    map[int]*node
