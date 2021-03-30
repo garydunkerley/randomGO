@@ -7,8 +7,10 @@ import (
 	"time"
 )
 
-// makeRandomBoard creates a board topology on n nodes such that
+// makeNaiveRandomBoard creates a board topology on n nodes such that
 // any two nodes are connected via an edge with a fixed probability.
+// This is decrepitated by the newer function that makes baords that 
+// are planar and more likely to be fun to play on.
 func makeNaiveRandomBoard(n int, prob float64) boardTop {
 	var ourTopology boardTop
 
@@ -176,13 +178,78 @@ func generateHexagonalLattice(n int) (map[int][]int, map[int][]float64) {
 	return edges, coordMap
 }
 
+// makeAscending rearranges an integer slice so that its elements are in ascending order
+func makeAscending(mySlice []int) []int {
+	targetLength = len(mySlice)
+
+	var ascendingSlice []int
+	for len(ascendingSlice) < targetLength {
+		currentMinIndex := 0
+		// iterate over the elements of your slice
+		// when you find an element smaller than the 
+		// current minimum, record it and move on.
+		for i := 0; i< len(mySlice); i++ {
+			if mySlice[i] =< mySlice[currentMinIndex] {
+				currentMinIndex = i
+			}
+		}
+		// add the smallest element to the ascending slice
+		// and then remove it from the original
+		ascendingSlice = append(ascendingSlice, mySlice[smallestIndex])
+		mySlice = append(mySlice[:smallestIndex], mySlice[smallestIndex+1:])
+	}
+	
+
+}
+
+// getCircuit takes our collection of edges and outputs an
+// encoding of a spanning tree that is also a path
+func getCircuit(n int, edges map[int][]int) map[int][]int{
+	circuit = []
+	circuitMap := make(map[int][]int)
+	visited := make(map[int]bool)
+	
+
+	currentNode := 0
+	
+	for len(visited) < n {
+		ascendingEdges = makeAscending(edges[currentNode])
+		
+		for i:= 0; i<len(ascendingEdges){
+			if !(visited[i]) {
+				circuit = append(circuit, currentNode)
+				currentNode = ascendingEdges[i]
+				visited[currentNode]
+				break
+			}
+		}
+	}
+
+	for i := 0; i<len(circuit); i++ {
+		if i>0 && i<n-1 {
+			circuitMap[circuit[i]] = append(circuitMap[circuit[i]], circuit[i-1], circuit[i+1]) 
+		} else if i==0 {
+			circuitMap[circuit[i]] = append(circuitMap[circuit[i]], circuit[i+1])
+		} else {
+			circuitMap[circuit[i]] = append(circuitMap[circuit[i]], circuit[i-1])
+		}
+	}
+
+	return circuitMap
+}
+
+
 // sparsifyEdges uses a random process to remove edges from the edge map provided. 
 // The process looks at how far the associated coordinate is from the center and uses this distance
 // to determine the probability that the node will lose and edge and which one. 
 // A particular spanning tree will be protected to ensure that the resulting graph is always connected
-func sparsifyEdges(edges map[int][]int, coordMap map[int][]float64) map[int][]int {
+func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][]float64) map[int][]int {
 	
 	newEdges := make(map[int][]int)
+	safeEdges := make(map[int][]int)
+	
+
+	curcuit := getCircuit(n, edges)
 
 	for i := 0; i < n; i++ {
 		// TODO: The probability that an edge is deleted should be determined in part by how far 
@@ -190,19 +257,25 @@ func sparsifyEdges(edges map[int][]int, coordMap map[int][]float64) map[int][]in
 		// We need a function that is bounded above by 1, and increases as 
 		// the distance of our node from zero increases
 		norm = euclideanNorm(coordMap[i])
-		prob = math.Pi / 2*(math.Tan(norm + 0.05))
+		prob = math.Pi / 2*(math.Atan(norm + 0.05))
 		
-		safeEdges := make(map[int][]int)
-
 		validEdges = []
+		dontInclude := make(map[int]bool)
+
 		for j := 0; j<len(edges[i]); j++ {
-			if edges[i][j]
+			for k := 0; k < len(safeEdges[i]); k++ {
+				if safeEdges[i][k] == edges[i][j] {
+					dontInclude[edges[i][j]]=true
+					break
+				}
+			}
+			if !dontInclude[edges[i][j]] {
+				validEdges = append(validEdges, edges[i][j])
+			}
 		}
-		 
-		// TODO: modify this so that edges from the circuit is preserved and also so that
-		// and also so that we never double count nodes
 
-
+		// if a node has more than 1 edge, then its edges will be subjected to 
+		// a random elimination process
 		if len(validEdges)>=2 {
 
 			stillRolling := true
@@ -224,7 +297,11 @@ func sparsifyEdges(edges map[int][]int, coordMap map[int][]float64) map[int][]in
 			for j := 0 ; j < len(validEdges)-1 ; j++ {
 				newEdges[i]=append(newEdges[i],j)
 				newEdges[j]=append(newedges[j],i)
+
+				// We declare any edges that survive this process to be safe 
+				// and not in danger of being eliminated later
 				safeEdges[j] = append(safeEdges[j],i)
+				safeEdges[i] = append(safeEdges[i],j)
 			
 			}
 		}
