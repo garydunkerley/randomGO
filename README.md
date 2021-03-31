@@ -1,7 +1,6 @@
 # randomGO
 
-![random_goban](https://user-images.githubusercontent.com/58280110/113188667-f3642480-921f-11eb-9dbc-7fb4f0a4d4a9.png)
-
+![random_goban](https://user-images.githubusercontent.com/58280110/113188912-3d4d0a80-9220-11eb-9a73-12762b3b4a99.png)
 
 Play go/igo/baduk on randomly generated boards! Gameplay is nearly identical to traditional go with the Japanese ruleset. The game is equipped with a scoring algorithm that should be able to detect simple instances of seki. This project also allows play on rectangular boards and is equipped with a .sgf parser. We are working on making an enriched text format so that randomGO games can be saved and studied. 
 
