@@ -6,7 +6,6 @@ We would also like to test existing Go algorithms in this setting to see how the
 
 # TODO
 
- - Modify random graph generation function so that all graphs are guaranteed to be planar. 
- - Create an algorithm for visualizing our random planar graph without singularities.
- - Develop protocol to allow playing over a network.
+ - Tweak random board generation until we get something 🌶️
+ - Develop network play
 
