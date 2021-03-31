@@ -1,15 +1,15 @@
 package game
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
 // makeNaiveRandomBoard creates a board topology on n nodes such that
 // any two nodes are connected via an edge with a fixed probability.
-// This is decrepitated by the newer function that makes baords that 
+// This is decrepitated by the newer function that makes baords that
 // are planar and more likely to be fun to play on.
 func makeNaiveRandomBoard(n int, prob float64) boardTop {
 	var ourTopology boardTop
@@ -44,62 +44,67 @@ func makeNaiveRandomBoard(n int, prob float64) boardTop {
 }
 
 // sum just sums the elements of an integer array
-func sum(array []int) int {  
- 	result := 0  
- 	
-	for _, v := range array {  
-  		result += v  
- 	}
+func sum(array []int) int {
+	result := 0
 
-	return result  
-}  
+	for _, v := range array {
+		result += v
+	}
+
+	return result
+}
 
 // euclideanNorm gets the magnitude of a point as a vector in two-dimensional Euclidean space
-func euclideanNorm(x []float64) (int, error) {
+func euclideanNorm(x []float64) float64 {
 	var sum float64
 	for i := 0; i < len(x); i++ {
-		sum += x[i]**2	
+		sum += math.Pow(x[i], 2)
 	}
 	return math.Sqrt(sum)
 }
 
-// getHexagonalNumbers computes a slice of hexagonal numbers that are
-// less then or equal to the input n
-func getHexagonalNumbers(n int) []int {
-	var hexNums []int
-	searching := true
-	count := 1
+func vecSum(x []float64, y []float64) []float64 {
+	var z []float64
+	for i := 0; i < len(x); i++ {
+		z = append(z, x[i]+y[i])
+	}
+	return z
+}
 
-	if n > 0 {
-		hexNums = append(hexNums, 1)
-		for searching {
-			nextHex := sum(hexNums) + count*6  
-			if nextHex =< n {
-				hexNums = append(hexNums, nextHex)
-				count += 1
-			} else {
-				searching = false	
-			}
+// getHexagonalNumbers computes a slice of centered hexagonal numbers less than or equal to n
+func getCenteredHexagonalNumbers(n int) []int {
+	var hexNums []int
+	// var newHexNums []int
+
+	var newHex int
+
+	count := 0
+	searching := true
+
+	for searching {
+
+		newHex = 3*count*(count+1) + 1
+
+		if newHex <= n {
+			hexNums = append(hexNums, newHex)
+			count += 1
+		} else {
+			searching = false
 		}
-		
-	} else {
-		fmt.Println("Please input a positive integer")
 	}
 
 	return hexNums
 }
 
-// generateHexagonalLattice takes an integer and outputs the information
-// nececessary to create a hexagonal goban
-func generateHexagonalLattice(n int) (map[int][]int, map[int][]float64) {
+// getHexagonalLattice takes an integer and outputs the edges and nodes of a
+// normal hexagonal lattice in two-dimensional Euclidean space
+func getHexagonalLattice(n int) (map[int][]int, map[int][]float64) {
 
 	theta := math.Pi / 6
-	multiplier := 0
+	multiplier := float64(0)
 
 	edges := make(map[int][]int)
 	coordMap := make(map[int][]float64)
-
-	ourTopology.nodeCount = n
 
 	// roomsMade will track how far we have iterated along
 	// direction to create a layer in Pascal's triangle.
@@ -111,22 +116,26 @@ func generateHexagonalLattice(n int) (map[int][]int, map[int][]float64) {
 
 	// the first node will be centered at the coordinate 0,0
 
-	currentVec = []float64{0, 0}
+	currentVec := []float64{0, 0}
 	coordMap[0] = currentVec
-	existsAlready[0] = true
 
-	// we will also initialize the direction of generation 
+	// we will also initialize the direction of generation
 	// as being trivial
 	genDirection := []float64{0, 0}
 
-	hexNums := getHexagonalNumbers(n) 
+	hexNums := getCenteredHexagonalNumbers(n)
 	hexIterate := 0
 
+	corner := 1
+	cornerCount := 1
+
+	fmt.Println("Our hexNumbers: ", hexNums)
 	for counter < n {
-		if counter == hexNums[hexIterate] {
+		levelingNumber := int(math.Min(float64(hexIterate+1), float64(len(hexNums)-1)))
+		if counter == hexNums[levelingNumber] {
 			// move along the current direction to the
 			// node that was seen previously
-			currentVec = currentVec + genDirection
+			currentVec = vecSum(currentVec, genDirection)
 			multiplier = 0
 			genDirection = []float64{1, 0}
 
@@ -136,99 +145,166 @@ func generateHexagonalLattice(n int) (map[int][]int, map[int][]float64) {
 
 		}
 
-		newVec := currentVec + genDirection
+		newVec := vecSum(currentVec, genDirection)
 		coordMap[counter] = newVec
 
 		// After establishing the existence of a new node,
 		// we attach edges between it and nodes we have already created.
 
-		// if counter happens to be a hexagonal number and greater than 1, 
+		// if counter happens to be a hexagonal number and greater than 1,
 		// we ensure there is an edge between it and the previous hexagonal number.
-		if counter == hexNums[hexIterate-1] && counter > 1 {
-	
+
+		// we distinguish three types of numbers, corners (numbers whose distance)
+		// from a hexagonal number is a multiple of the hexIterate+1), nodes that are
+		// next to hexNumbers (and so are subject to special index management), and the rest.
+
+		// if a number is a corner
+		if counter == corner {
+
+			if counter != hexNums[hexIterate] {
+				edges[counter] = append(edges[counter], counter-1)
+				edges[counter-1] = append(edges[counter-1], counter)
+			}
+
+			edges[counter] = append(edges[counter], counter-cornerCount)
+			edges[counter-cornerCount] = append(edges[counter-cornerCount], counter)
+
+			corner += (hexIterate + 1)
+
+			if counter+1 != hexNums[levelingNumber] {
+				cornerCount += 1
+			}
+			if counter+1 == 7 {
+				edges[counter] = append(edges[counter], 1)
+				edges[1] = append(edges[hexNums[hexIterate]], counter)
+
+				edges[counter] = append(edges[counter], counter-1)
+				edges[counter-1] = append(edges[counter-1], counter)
+
+			}
+
+		} else if counter+1 == hexNums[levelingNumber] {
+			edges[counter] = append(edges[counter], hexNums[hexIterate])
+			edges[hexNums[hexIterate]] = append(edges[hexNums[hexIterate]], counter)
+
 			edges[counter] = append(edges[counter], hexNums[hexIterate-1])
 			edges[hexNums[hexIterate-1]] = append(edges[hexNums[hexIterate-1]], counter)
-			
-		} else {
-			
-			if hexIterate == 1 {
-				edges[counter] = append(edges[counter], 0)
-			} else {
-				first := counter - (6 * layerCount)
-				second := counter - (6*layercount - 1)
 
-				edges[counter] = append(edges[counter], first, second)
-				edges[first] = append(edges[first], counter)
-				edges[second] = append(edges[second], counter)
-			}
 			edges[counter] = append(edges[counter], counter-1)
-			edges[counter-1] append(edges[counter-1], counter)
+			edges[counter-1] = append(edges[counter-1], counter)
 
+			second := counter - (cornerCount)
+
+			edges[counter] = append(edges[counter], second)
+			edges[second] = append(edges[second], counter)
+
+		} else {
+
+			first := counter - (cornerCount)
+			second := counter - (cornerCount - 1)
+
+			edges[counter] = append(edges[counter], first, second)
+			edges[first] = append(edges[first], counter)
+			edges[second] = append(edges[second], counter)
+
+			if counter > 1 {
+				edges[counter] = append(edges[counter], counter-1)
+				edges[counter-1] = append(edges[counter-1], counter)
+			}
 		}
 
 		cellsMade += 1
+
 		if cellsMade == hexIterate {
 
-			multiplier = (multiplier + 1) % 6
+			multiplier = float64((int(multiplier) + 1) % 6)
 			genDirection = []float64{math.Sin(multiplier * theta), math.Cos(multiplier * theta)}
 			cellsMade = 0
-			
+
 		}
+
+		counter += 1
 	}
+
+	for i := 0; i < n; i++ {
+		slice := edges[i]
+		ascendingSlice := makeAscending(slice)
+		edges[i] = ascendingSlice
+		fmt.Println(i, " is sent to ", ascendingSlice)
+	}
+
 	return edges, coordMap
 }
 
 // makeAscending rearranges an integer slice so that its elements are in ascending order
 func makeAscending(mySlice []int) []int {
-	targetLength = len(mySlice)
+
+	targetLength := len(mySlice)
 
 	var ascendingSlice []int
+
 	for len(ascendingSlice) < targetLength {
 		currentMinIndex := 0
 		// iterate over the elements of your slice
-		// when you find an element smaller than the 
+		// when you find an element smaller than the
 		// current minimum, record it and move on.
-		for i := 0; i< len(mySlice); i++ {
-			if mySlice[i] =< mySlice[currentMinIndex] {
+		for i := 0; i < len(mySlice); i++ {
+			if mySlice[i] <= mySlice[currentMinIndex] {
 				currentMinIndex = i
 			}
 		}
 		// add the smallest element to the ascending slice
 		// and then remove it from the original
-		ascendingSlice = append(ascendingSlice, mySlice[smallestIndex])
-		mySlice = append(mySlice[:smallestIndex], mySlice[smallestIndex+1:])
+		ascendingSlice = append(ascendingSlice, mySlice[currentMinIndex])
+		mySlice = append(mySlice[:currentMinIndex], mySlice[currentMinIndex+1:]...)
 	}
-	
 
+	return ascendingSlice
 }
 
 // getCircuit takes our collection of edges and outputs an
 // encoding of a spanning tree that is also a path
-func getCircuit(n int, edges map[int][]int) map[int][]int{
-	circuit = []
+func getCircuit(n int, edges map[int][]int) map[int][]int {
+
+	var circuit []int
+
 	circuitMap := make(map[int][]int)
 	visited := make(map[int]bool)
-	
 
 	currentNode := 0
-	
-	for len(visited) < n {
-		ascendingEdges = makeAscending(edges[currentNode])
-		
-		for i:= 0; i<len(ascendingEdges){
+
+	// look at the list of nodes adjacent to the current node arranged in
+	// increasing order and then append the smallest, unvisited node
+	// to the circuit
+
+	// TODO: remove counter for bug testing
+	counter := 0
+	for len(visited) < n && counter < 1 {
+
+		ascendingEdges := makeAscending(edges[currentNode])
+
+		fmt.Println("Debug (makeRandomBoard l.235): ascending array created")
+
+		fmt.Println("Debug (makeRandomBoard l.40): the length of the ascending array for node", currentNode, "is", len(ascendingEdges))
+
+		for _, i := range ascendingEdges {
 			if !(visited[i]) {
 				circuit = append(circuit, currentNode)
 				currentNode = ascendingEdges[i]
-				visited[currentNode]
+				visited[currentNode] = true
 				break
 			}
 		}
+		counter += 1
 	}
 
-	for i := 0; i<len(circuit); i++ {
-		if i>0 && i<n-1 {
-			circuitMap[circuit[i]] = append(circuitMap[circuit[i]], circuit[i-1], circuit[i+1]) 
-		} else if i==0 {
+	// build a map that encode the incidence behavior of the nodes forming the circuit.
+	fmt.Println("Debug (makeRandomBoard l.245): we are aboutto construct the circuit map")
+	for i := range circuit {
+		if i > 0 && i < n-1 {
+
+			circuitMap[circuit[i]] = append(circuitMap[circuit[i]], circuit[i-1], circuit[i+1])
+		} else if i == 0 {
 			circuitMap[circuit[i]] = append(circuitMap[circuit[i]], circuit[i+1])
 		} else {
 			circuitMap[circuit[i]] = append(circuitMap[circuit[i]], circuit[i-1])
@@ -238,78 +314,87 @@ func getCircuit(n int, edges map[int][]int) map[int][]int{
 	return circuitMap
 }
 
-
-// sparsifyEdges uses a random process to remove edges from the edge map provided. 
+// sparsifyEdges uses a random process to remove edges from the edge map provided.
 // The process looks at how far the associated coordinate is from the center and uses this distance
-// to determine the probability that the node will lose and edge and which one. 
+// to determine the probability that the node will lose and edge and which one.
 // A particular spanning tree will be protected to ensure that the resulting graph is always connected
 func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][]float64) map[int][]int {
-	
-	newEdges := make(map[int][]int)
-	safeEdges := make(map[int][]int)
-	
 
-	curcuit := getCircuit(n, edges)
+	safeEdges := make(map[int][]int)
+
+	// declare all edges in the circuit to be safe from elimination
+	// to ensure that the sparsified graph is always connected.
+	circuit := getCircuit(n, edges)
+	fmt.Println("Debug (makeRandomBoard l.276): our circuit is:", circuit)
+	for i := 0; i < n; i++ {
+		safeEdges[i] = circuit[i]
+	}
+	fmt.Println("Debug (makeRandomboard l.279): circuit has been constructed")
 
 	for i := 0; i < n; i++ {
-		// TODO: The probability that an edge is deleted should be determined in part by how far 
-		// away the node in question is from the "center" of the board (0).
-		// We need a function that is bounded above by 1, and increases as 
-		// the distance of our node from zero increases
-		norm = euclideanNorm(coordMap[i])
-		prob = math.Pi / 2*(math.Atan(norm + 0.05))
-		
-		validEdges = []
-		dontInclude := make(map[int]bool)
 
-		for j := 0; j<len(edges[i]); j++ {
-			for k := 0; k < len(safeEdges[i]); k++ {
-				if safeEdges[i][k] == edges[i][j] {
-					dontInclude[edges[i][j]]=true
+		var validEdges []int
+
+		// iterate over all the edges attached to a node i and check to see if they are
+		// safe (i.e. that they belong to the circuit computed earlier or they have
+		// survived a roll already)
+		// edges that are not safe may be subject to elimination when the rolling ovvurs.
+		for _, edge := range edges[i] {
+			isSafe := false
+			for _, safeEdge := range safeEdges[i] {
+				if edge == safeEdge {
+					isSafe = true
 					break
 				}
 			}
-			if !dontInclude[edges[i][j]] {
-				validEdges = append(validEdges, edges[i][j])
+			if !isSafe {
+				validEdges = append(validEdges, edge)
 			}
 		}
 
-		// if a node has more than 1 edge, then its edges will be subjected to 
+		fmt.Println("Debug: the number of valid edges is", len(validEdges))
+
+		// if a node has more than 2 edges, then its edges will be subjected to
 		// a random elimination process
-		if len(validEdges)>=2 {
+		if len(validEdges) > 2 {
+			//norm := euclideanNorm(coordMap[i])
 
 			stillRolling := true
-			for stillRolling {
+			for stillRolling || len(validEdges) > 2 {
+				//TODO: tweak this until I get something I like.
+				// Right now, being farther away from the center increases the likelihood that
+				// a node will lose and edge as does having a lot of edges
 
+				// prob := math.Pi / (2 * math.Pow(math.Atan(norm+0.05), float64(6-len(validEdges))))
+				prob := float64(0)
 				rand.Seed(time.Now().UnixNano())
 				v := rand.Float64()
-		
+
 				if v < prob {
 					randomIndex := rand.Intn(len(validEdges))
-					validEdges = append(validEdges[:randomIndex], validEdges[randomIndex+1:])
-				
+					validEdges = append(validEdges[:randomIndex], validEdges[randomIndex+1:]...)
+
 				} else {
 					stillRolling = false
 				}
 
 			}
 
-			for j := 0 ; j < len(validEdges)-1 ; j++ {
-				newEdges[i]=append(newEdges[i],j)
-				newEdges[j]=append(newedges[j],i)
+			// all edges that survive this process are declared to be safe
+			if len(validEdges) > 0 {
+				for j := 0; j < len(validEdges)-1; j++ {
 
-				// We declare any edges that survive this process to be safe 
-				// and not in danger of being eliminated later
-				safeEdges[j] = append(safeEdges[j],i)
-				safeEdges[i] = append(safeEdges[i],j)
-			
+					safeEdges[validEdges[j]] = append(safeEdges[validEdges[j]], i)
+					safeEdges[i] = append(safeEdges[i], validEdges[j])
+				}
 			}
 		}
 	}
-	return newEdges
+
+	return safeEdges
 }
 
-
+/*
 func addBoundaryEdges(n int, edges map[int][]int) map[int][]int {
 //TODO make a map that will be guaranteed a planar representation.
 
@@ -319,19 +404,19 @@ func addBoundaryEdges(n int, edges map[int][]int) map[int][]int {
 
 	// TODO how to find the boundary?
 
-
-
-
 return
 }
+*/
 
-func makeRandomBoard(n int) randomBoardTop {
-	var ourTopology randomBoardTop
+// makeRandomBoard begins by generating a hexagonal lattice on n points
+// and then runs through a procedure to make edges more sparse
+func makeRandomBoard(n int) boardTop {
+	var ourTopology boardTop
 	ourTopology.nodeCount = n
 
-	tempEdges, ourTopology.coords := getHexagonalLattice(n)
-	
-	ourTopology.edges = tempEdges
+	tempEdges, coords := getHexagonalLattice(n)
+	ourTopology.cartesianCoords = coords
+	ourTopology.edges = sparsifyEdges(n, tempEdges, coords)
 
 	return ourTopology
 }

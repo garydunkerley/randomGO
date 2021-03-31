@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	game.StartRectangularGame(4, 4)
-	// game.StartRandomGame(70, 0.05)
+	//game.StartRectangularGame(4, 4)
+	game.StartRandomGame(60)
 	// game.DebugPrint()
 }

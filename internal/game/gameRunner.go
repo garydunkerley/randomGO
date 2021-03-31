@@ -213,8 +213,8 @@ func StartRectangularGame(n int, m int) {
 	return
 }
 
-func StartRandomGame(n int, prob float64) {
-	state := initBoardState(makeRandomBoard(n, prob), 10) // 10 komi
+func StartRandomGame(n int) {
+	state := initBoardState(makeRandomBoard(n), 10) // 10 komi
 
 	isRandom := true
 	state.runGame(isRandom)
