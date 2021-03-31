@@ -9,6 +9,7 @@ Boards are created by constructing a regular equilateral lattice (no position ha
 
 # TODO
  - Tweak random board generation
+ - Make boards look prettier 
  - Implement Zobrist hashing for super ko rule
  - Create format for random games
  - Create UI
