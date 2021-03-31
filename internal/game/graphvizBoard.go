@@ -130,7 +130,7 @@ func visualizeBoard(gg GoGraph, isRandom bool, dead map[*node]bool) {
 	g := graphviz.New()
 
 	if isRandom {
-		g.SetLayout("twopi")
+		g.SetLayout("neato")
 	} else {
 		g.SetLayout("osage")
 	}
@@ -139,7 +139,7 @@ func visualizeBoard(gg GoGraph, isRandom bool, dead map[*node]bool) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	graph.SetBackgroundColor("blanchedalmond")
+	graph.SetBackgroundColor("burlywood3")
 
 	// construct the graphviz board
 

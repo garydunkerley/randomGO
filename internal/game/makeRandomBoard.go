@@ -263,49 +263,74 @@ func makeAscending(mySlice []int) []int {
 }
 
 // getCircuit takes our collection of edges and outputs an
-// encoding of a spanning tree that is also a path
+// encoding of a spanning tree
 func getCircuit(n int, edges map[int][]int) map[int][]int {
 
+	fmt.Println("getcircuit has been called")
 	var circuit []int
 
 	circuitMap := make(map[int][]int)
 	visited := make(map[int]bool)
 
-	currentNode := 0
+	currentNode := n - 1
+
+	for len(circuit) < n {
+		circuit = append(circuit, currentNode)
+		visited[currentNode] = true
+
+		//TODO: from the neighbors of the current node, find the one that
+		// minimizes the distance and hasn't been visited yet
+		var unvisited []int
+		for i := 0; i < len(edges[currentNode]); i++ {
+			if !(visited[edges[currentNode][i]]) {
+				unvisited = append(unvisited, edges[currentNode][i])
+			}
+		}
+		smallest := math.Inf(1)
+		for _, i := range unvisited {
+			if math.Sqrt(math.Pow(float64(currentNode-i), 2)) < math.Sqrt(math.Pow(float64(currentNode)-smallest, 2)) {
+				smallest = float64(i)
+			}
+		}
+
+		currentNode = int(smallest)
+	}
 
 	// look at the list of nodes adjacent to the current node arranged in
 	// increasing order and then append the smallest, unvisited node
 	// to the circuit
 
-	// TODO: remove counter for bug testing
-	counter := 0
-	for len(visited) < n && counter < 1 {
+	/*
 
-		ascendingEdges := makeAscending(edges[currentNode])
+		counter := 0
+		for len(visited) < n || counter < 100 {
 
-		fmt.Println("Debug (makeRandomBoard l.235): ascending array created")
+			fmt.Println("The map 'visited' has length: ", len(visited))
+			ascendingEdges := makeAscending(edges[currentNode])
+			fmt.Println("The length of the ascendingEdges slice is", len(ascendingEdges))
 
-		fmt.Println("Debug (makeRandomBoard l.40): the length of the ascending array for node", currentNode, "is", len(ascendingEdges))
-
-		for _, i := range ascendingEdges {
-			if !(visited[i]) {
-				circuit = append(circuit, currentNode)
-				currentNode = ascendingEdges[i]
-				visited[currentNode] = true
-				break
+			for i := 0; i < len(ascendingEdges); i++ {
+				if !(visited[i]) {
+					circuit = append(circuit, currentNode)
+					currentNode = ascendingEdges[i]
+					visited[currentNode] = true
+					break
+				}
 			}
+			counter += 1
 		}
-		counter += 1
-	}
+	*/
 
 	// build a map that encode the incidence behavior of the nodes forming the circuit.
-	fmt.Println("Debug (makeRandomBoard l.245): we are aboutto construct the circuit map")
+	fmt.Println("Debug (makeRandomBoard l.245): we are about to construct the circuit map")
 	for i := range circuit {
 		if i > 0 && i < n-1 {
 
 			circuitMap[circuit[i]] = append(circuitMap[circuit[i]], circuit[i-1], circuit[i+1])
 		} else if i == 0 {
 			circuitMap[circuit[i]] = append(circuitMap[circuit[i]], circuit[i+1])
+			fmt.Println("Zero case cleared")
+
 		} else {
 			circuitMap[circuit[i]] = append(circuitMap[circuit[i]], circuit[i-1])
 		}
@@ -325,14 +350,14 @@ func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][]float64) map[i
 	// declare all edges in the circuit to be safe from elimination
 	// to ensure that the sparsified graph is always connected.
 	circuit := getCircuit(n, edges)
-	fmt.Println("Debug (makeRandomBoard l.276): our circuit is:", circuit)
+
 	for i := 0; i < n; i++ {
 		safeEdges[i] = circuit[i]
 	}
-	fmt.Println("Debug (makeRandomboard l.279): circuit has been constructed")
 
 	for i := 0; i < n; i++ {
 
+		fmt.Println("Looking at node ", i)
 		var validEdges []int
 
 		// iterate over all the edges attached to a node i and check to see if they are
@@ -352,29 +377,31 @@ func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][]float64) map[i
 			}
 		}
 
-		fmt.Println("Debug: the number of valid edges is", len(validEdges))
-
 		// if a node has more than 2 edges, then its edges will be subjected to
 		// a random elimination process
-		if len(validEdges) > 2 {
-			//norm := euclideanNorm(coordMap[i])
+		if len(validEdges) > 0 {
+			norm := euclideanNorm(coordMap[i])
 
 			stillRolling := true
-			for stillRolling || len(validEdges) > 2 {
+			for stillRolling && len(validEdges) > 2 {
+
+				fmt.Println("Rolling for node", i)
 				//TODO: tweak this until I get something I like.
 				// Right now, being farther away from the center increases the likelihood that
 				// a node will lose and edge as does having a lot of edges
 
-				// prob := math.Pi / (2 * math.Pow(math.Atan(norm+0.05), float64(6-len(validEdges))))
-				prob := float64(0)
+				prob := math.Pi / (2 * math.Pow(math.Atan(norm+0.05), float64(6-len(validEdges))))
+				// prob := float64(0)
 				rand.Seed(time.Now().UnixNano())
 				v := rand.Float64()
 
 				if v < prob {
 					randomIndex := rand.Intn(len(validEdges))
-					validEdges = append(validEdges[:randomIndex], validEdges[randomIndex+1:]...)
+					fmt.Println("Removing the connection between ", i, " and ", validEdges[randomIndex])
 
+					validEdges = append(validEdges[:randomIndex], validEdges[randomIndex+1:]...)
 				} else {
+					fmt.Println("Roll failed")
 					stillRolling = false
 				}
 
@@ -384,13 +411,21 @@ func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][]float64) map[i
 			if len(validEdges) > 0 {
 				for j := 0; j < len(validEdges)-1; j++ {
 
+					fmt.Println("The connection between ", i, " and ", validEdges[j], " survived.")
 					safeEdges[validEdges[j]] = append(safeEdges[validEdges[j]], i)
 					safeEdges[i] = append(safeEdges[i], validEdges[j])
 				}
 			}
+		} else {
+			fmt.Println("Not enough valid edges! Of this node's", len(edges[i]), "edges, only ", len(validEdges), " are valid")
 		}
+
 	}
 
+	fmt.Println("The original was: ")
+	fmt.Println(edges)
+	fmt.Println("But the new edges are:")
+	fmt.Println(safeEdges)
 	return safeEdges
 }
 

@@ -127,7 +127,7 @@ func (gameState *boardState) runGame(isRandom bool) {
 
 	var blackScore float64
 	var whiteScore float64
-	// dead := make(map[*node]bool)
+	dead := make(map[*node]bool)
 
 	prompt := promptRect()
 	gameState.ongoing = true
@@ -165,7 +165,7 @@ func (gameState *boardState) runGame(isRandom bool) {
 		}
 
 		// This should force an image of the board to come up.
-		//		visualizeBoard(gameState.GoGraph, isRandom, dead)
+		visualizeBoard(gameState.GoGraph, isRandom, dead)
 	}
 	ass := gameState.history.allStoneStrings
 	cs := ass[len(ass)-1]
