@@ -32,7 +32,7 @@ func (g Graph) initStone(myNode *node) *Node {
 	}
 	stone.SetStyle("filled")
 	if myNode.color == 0 {
-		stone.SetFillColor("grey")
+		stone.SetFillColor("burlywood3")
 	} else if myNode.color == 1 {
 		stone.SetFillColor("black")
 	} else {

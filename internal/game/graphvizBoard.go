@@ -55,21 +55,23 @@ func initStone(myNode *node, g *cgraph.Graph, dead map[*node]bool) *cgraph.Node 
 	stone.SetFixedSize(true)
 
 	if myNode.color == 0 {
-		stone.SetFillColor("blanchedalmond")
+		stone.SetFillColor("burlywood3")
 	} else if myNode.color == 1 {
 		if dead[myNode] {
 			stone.SetFillColor("grey1")
 		} else {
 			stone.SetFillColor("black")
+			stone.SetFontColor("white")
 		}
 	} else {
 		if dead[myNode] {
 			stone.SetFillColor("grey100")
 		} else {
 			stone.SetFillColor("white")
+			stone.SetFontColor("black")
 		}
 	}
-	stone.SetFontSize(0)
+	stone.SetFontSize(20)
 
 	return stone
 }
