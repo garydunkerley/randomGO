@@ -6,6 +6,6 @@ import (
 
 func main() {
 	//game.StartRectangularGame(4, 4)
-	game.StartRandomGame(361)
+	game.StartRandomGame(81)
 	// game.DebugPrint()
 }
