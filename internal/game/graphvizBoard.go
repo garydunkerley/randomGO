@@ -55,7 +55,7 @@ func initStone(myNode *node, g *cgraph.Graph, dead map[*node]bool) *cgraph.Node 
 	stone.SetFixedSize(false)
 
 	if myNode.color == 0 {
-		stone.SetFillColor("burlywood3")
+		stone.SetFillColor("transparent")
 	} else if myNode.color == 1 {
 		if dead[myNode] {
 			stone.SetFillColor("grey1")
@@ -71,7 +71,9 @@ func initStone(myNode *node, g *cgraph.Graph, dead map[*node]bool) *cgraph.Node 
 			stone.SetFontColor("black")
 		}
 	}
+
 	stone.SetFontSize(20)
+	// stone.SetFontSize(0)
 
 	return stone
 }
@@ -115,7 +117,7 @@ func constructAllEdges(gg GoGraph, t map[*node]*cgraph.Node, g *cgraph.Graph) {
 					log.Fatal(err)
 				}
 				edge.SetArrowHead("none")
-				edge.SetPenWidth(3)
+				edge.SetPenWidth(5)
 				edgeMade[edgeString1] = true
 				edgeMade[edgeString2] = true
 
@@ -167,6 +169,81 @@ func visualizeBoard(gg GoGraph, isRandom bool, dead map[*node]bool) {
 		log.Fatal(err)
 	}
 	open.Run(cwd + "/board.png")
+	return
+
+}
+
+// initEbitenNodes performs the same function as initStone but is modified so that nodes will not be visible in the final .PNG output
+func initEbitenStone(myNode *node, g *cgraph.Graph) *cgraph.Node {
+	stone, err := g.CreateNode(strconv.Itoa(myNode.id))
+	if err != nil {
+		log.Fatal(err)
+	}
+	stone.SetStyle("filled")
+	stone.SetShape("plain")
+
+	stone.SetFixedSize(false)
+	stone.SetFillColor("transparent")
+	stone.SetFontSize(0)
+
+	return stone
+}
+
+// constructAllEbitenStones performs the same function as
+// constructAllStones but is set up to output a plain graph to
+// be used as an asset in Ebiten
+func constructAllEbitenStones(gg GoGraph, g *cgraph.Graph) map[*node]*cgraph.Node {
+	transChart := make(map[*node]*cgraph.Node)
+
+	// for each node in our GoGraph, we initialize a stone
+	// and create a map assignment relating GoGraph *nodes
+	// to graphviz *Nodes
+	for i := 0; i < len(gg.nodes); i++ {
+		transChart[gg.nodes[i]] = initEbitenStone(gg.nodes[i], g)
+	}
+	return transChart
+
+}
+
+func MakeEbitenGraphAsset(gg GoGraph, isRandom bool) {
+
+	cwd := getWorkingDirectory()
+
+	g := graphviz.New()
+
+	if isRandom {
+		g.SetLayout("neato")
+	} else {
+		g.SetLayout("osage")
+	}
+
+	graph, err := g.Graph()
+	if err != nil {
+		log.Fatal(err)
+	}
+	graph.SetBackgroundColor("transparent")
+
+	// construct the graphviz board
+
+	defer func() {
+		if err := g.Close(); err != nil {
+			log.Fatal(err)
+		}
+		// g.Close
+	}()
+
+	trans := constructAllEbitenStones(gg, graph)
+	constructAllEdges(gg, trans, graph)
+
+	var buf bytes.Buffer
+	if err := g.Render(graph, graphviz.PNG, &buf); err != nil {
+		log.Fatal(err)
+	}
+
+	// edit so that the directory is what you want it to be
+	if err := g.RenderFilename(graph, graphviz.PNG, cwd+"/assets/temporary/board.png"); err != nil {
+		log.Fatal(err)
+	}
 	return
 
 }

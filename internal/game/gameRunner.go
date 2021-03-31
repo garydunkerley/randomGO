@@ -219,3 +219,11 @@ func StartRandomGame(n int) {
 	isRandom := true
 	state.runGame(isRandom)
 }
+
+func EbitenRandomGame(n int, komi int) (boardState, bool) {
+	state := initBoardState(makeRandomBoard(n), 10)
+
+	isRandom := true
+
+	return state, isRandom
+}
