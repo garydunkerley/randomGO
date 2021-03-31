@@ -13,6 +13,6 @@ Boards are created by constructing a regular equilateral lattice (no position ha
  - Implement Zobrist hashing for super ko rule
  - Create format for random games
  - Create UI
- - create algorithms to play random games
+ - Create algorithms to play random games
  - Develop network play
 
