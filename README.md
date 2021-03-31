@@ -6,5 +6,6 @@ The goal of this project is to create a simple web application with a UI that al
 # TODO
 
  - Tweak random board generation until we get something 🌶️
+ - Create UI
  - Develop network play
 
