@@ -242,7 +242,6 @@ func (s *boardState) playMoveInput(input moveInput) error {
 	subsumed := s.getSubsumedStrings(nodeID, color)
 
 	capt := s.getCapturedStrings(nodeID, color)
-	fmt.Println("Debug (boardStructs line 248): the captured strings are ", capt)
 	//Note that the liberties of these strings do not account for captures yet.
 	//It's just the old strings, before the move is played.
 	newString := s.computeNewString(subsumed, input)
@@ -272,10 +271,6 @@ func (s *boardState) playMoveInput(input moveInput) error {
 
 	// locates and documents ko points, if any exist.
 	s.setKoPoint(nodeID, newString, capt)
-
-	// TODO: delete this as it's for debugging
-	fmt.Println("Debug: The stone strings that currently exist are:")
-	fmt.Println(s.history.allStoneStrings[len(s.history.allStoneStrings)-1])
 
 	return nil
 }

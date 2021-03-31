@@ -42,7 +42,7 @@ func (G GoGraph) getSubsumedStrings(nodeID int, color int8) []stoneString {
 			}
 		}
 	}
-	fmt.Println("Debug: Our merge representatives are: ")
+
 	for z := range mergeStringReps {
 		fmt.Println(z)
 		mergeCandidates = append(mergeCandidates, G.stringOf[z])
