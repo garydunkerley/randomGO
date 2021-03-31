@@ -52,7 +52,7 @@ func initStone(myNode *node, g *cgraph.Graph, dead map[*node]bool) *cgraph.Node 
 	stone.SetStyle("filled")
 	stone.SetShape("circle")
 
-	stone.SetFixedSize(true)
+	stone.SetFixedSize(false)
 
 	if myNode.color == 0 {
 		stone.SetFillColor("burlywood3")
@@ -115,8 +115,10 @@ func constructAllEdges(gg GoGraph, t map[*node]*cgraph.Node, g *cgraph.Graph) {
 					log.Fatal(err)
 				}
 				edge.SetArrowHead("none")
+				edge.SetPenWidth(3)
 				edgeMade[edgeString1] = true
 				edgeMade[edgeString2] = true
+
 			}
 		}
 
