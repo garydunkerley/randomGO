@@ -8,6 +8,8 @@ Boards are created by constructing a regular equilateral lattice (no position ha
 
 
 # TODO
+ - Fix capturing error (captured stones aren't treated as liberties?)
+ - Fix score estimator
  - Tweak random board generation
  - Make boards look prettier 
  - Implement Zobrist hashing for super ko rule
