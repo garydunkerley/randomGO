@@ -71,6 +71,7 @@ func update(screen *ebiten.Image) error {
 	playerOp := &ebiten.DrawImageOptions{}
 	playerOp.GeoM.Translate(playerOne.xPos, playerOne.yPos)
 	screen.DrawImage(playerOne.image, playerOp)
+	ebitenutil.DebugPrint(screen, "doot doot")
 
 	return nil
 }

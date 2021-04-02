@@ -2,6 +2,7 @@ package main
 
 import (
 	game "github.com/garydunkerley/randomGO/internal/game"
+	"math"
 
 	_ "image/png"
 	"log"
@@ -10,13 +11,38 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
+// declaring the gameState struct
+var state game.boardState
+
+// some global parameters
+
+var isRandom bool
+
+// declaring graphical assets
+
 var wood *ebiten.Image
 var graph *ebiten.Image
 var whiteStone *ebiten.Image
 var blackStone *ebiten.Image
 
+// numeric variables we may wish to fix
+
+// stoneRadius will tell us how large our stone assets should be
+var stoneRadius float64
+
+// buttonRadius should be computed using geometric information
+// about the graph embedding. It should be at least as big as the// pciture of the stone, but less than half the width of the shortest distance between two nodes in our graph.
+
+var buttonRadius float64
+
+// some values to be used for rescaling the graph
+
 func init() {
 	var err error
+
+	state, isRandom = game.EbitenRandomGame(300, 10)
+	game.MakeEbitenGraphAsset(state.GoGraph, isRandom)
+
 	wood, _, err = ebitenutil.NewImageFromFile("assets/woodgrain3.png")
 
 	graph, _, err = ebitenutil.NewImageFromFile("assets/temporary/board.png")
@@ -26,6 +52,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }
 
 type Game struct{}
@@ -56,15 +83,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// adds the graph produced by graphviz
 	// with suitable translation and rescaling
 	// to ensure that it is centered
+
 	gWidth, gHeight := graph.Size()
-	bWidth, bHeight := wood.Size()
+	wWidth, wHeight := wood.Size()
 	rescale := 0.95
 
-	rWidth := rescale * float64(bWidth) / float64(gWidth)
-	rHeight := rescale * float64(bHeight) / float64(gHeight)
+	rWidth := rescale * float64(wWidth) / float64(gWidth)
+	rHeight := rescale * float64(wHeight) / float64(gHeight)
 
-	tWidth := ((1 - rescale) * float64(bWidth)) / 2
-	tHeight := ((1 - rescale) * float64(bHeight)) / 2
+	tWidth := ((1 - rescale) * float64(wWidth)) / 2
+	tHeight := ((1 - rescale) * float64(wHeight)) / 2
 
 	graphPos := &ebiten.DrawImageOptions{}
 	graphPos.GeoM.Scale(rWidth, rHeight)
@@ -74,29 +102,48 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 // this struct will track the stone objects as they occur in the game
-type ebitenStone struct {
-	stone      *ebiten.Image
+
+type ebitenNode struct {
+	picture    *ebiten.Image
 	id         int
 	xPos, yPos float64
 }
 
+/*
+func isNodeClicked(x, y int, ebitenNodeMap map[int]ebitenNode) (int, bool) {
+	for _, node := range ebitenNodeMap {
+		if math.Sqrt(math.Pow(float64(x)-node.xPos, 2)+math.Pow(float64(y)-node.yPos, 2)) <= buttonRadius {
+			if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+				return node.id, true
+			}
+		}
+	}
+
+	return -1, false
+}
+
 func getPlayerInput() {
+
+	return
+}
+
+func placeStone() {
+	if CursorPosition() ==
 
 }
 
 func update(screen *ebiten.Image) error {
+	return
 
 }
+*/
 
 func main() {
-
-	state, isRandom := game.EbitenRandomGame(300, 10)
-
-	game.MakeEbitenGraphAsset(state.GoGraph, isRandom)
 
 	ebiten.SetWindowSize(1000, 1000)
 	ebiten.SetWindowTitle("randomGO: Randomly generated Go boards")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
+	game.state.EbitenRunGame(isRandom)
 }

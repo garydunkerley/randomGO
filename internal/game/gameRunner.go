@@ -177,6 +177,61 @@ func (gameState *boardState) runGame(isRandom bool) {
 	fmt.Println("White:", whiteScore)
 }
 
+func (gameState *boardState) EbitenRunGame(isRandom bool) {
+	coo, nodeCount := gameState.coords, gameState.nodeCount
+
+	var blackScore float64
+	var whiteScore float64
+	dead := make(map[*node]bool)
+
+	prompt := promptRect()
+	gameState.ongoing = true
+
+	for gameState.ongoing {
+		nodeID := promptNodeID(prompt, coo, nodeCount)
+		// check for exit code
+		if nodeID == -2 {
+			print("Goodbye!")
+			break
+		}
+		// instantiates an instance of the moveInput
+		// struct with id equal to user input
+		next := moveInput{id: nodeID}
+
+		// Populate playerColor
+		if gameState.whiteToMove == false {
+			next.playerColor = 1 // black
+		} else {
+			next.playerColor = 2 // white
+		}
+
+		if nodeID == -1 {
+			fmt.Println("Passing your turn.")
+			next.isPass = true // Must be changed for passes to be counted
+		}
+
+		//The next moveInput is fully populated.
+		if err := gameState.playMoveInput(next); err != nil {
+			fmt.Println(err)
+			fmt.Println("Please try again.")
+		} else {
+			fmt.Printf("%v", gameState.GoGraph)
+
+		}
+
+		// This should force an image of the board to come up.
+		visualizeBoard(gameState.GoGraph, isRandom, dead)
+	}
+	ass := gameState.history.allStoneStrings
+	cs := ass[len(ass)-1]
+
+	blackScore, whiteScore, _ = getNaiveScoreSuggestion(gameState.GoGraph, cs)
+	//	visualizeBoard(gameState.GoGraph, isRandom, dead)
+	fmt.Println("I think the score should be: ")
+	fmt.Println("Black:", blackScore)
+	fmt.Println("White:", whiteScore)
+}
+
 // moveByID is an alternate way to run a game. It is not interactive.
 // You simply provide the node ID and the move is played.
 func (gameState *boardState) moveByID(ID int) error {
@@ -213,11 +268,14 @@ func StartRectangularGame(n int, m int) {
 	return
 }
 
-func StartRandomGame(n int) {
+func StartRandomGame(n int) boardState {
+
 	state := initBoardState(makeRandomBoard(n), 10) // 10 komi
 
 	isRandom := true
 	state.runGame(isRandom)
+
+	return state
 }
 
 func EbitenRandomGame(n int, komi int) (boardState, bool) {
