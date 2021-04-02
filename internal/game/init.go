@@ -24,6 +24,29 @@ func (a *boardTop) initGraph() GoGraph {
 	return G
 }
 
+func (gg GoGraph) getColorAssignments() map[int]int8 {
+
+	colorMap := make(map[int]int8)
+	for i := range gg.nodes {
+		colorMap[i] = gg.nodes[i].color
+	}
+
+	return colorMap
+}
+
+/*
+func (gameState boardState) initEbitenBoardInfo() EbitenBoardInfo {
+	var boardInfo EbitenBoardInfo
+
+	boardInfo.colorAssignments = gameState.GoGraph.getColorAssignments()
+	boardInfo.boardTop = gameState.GoGraph.boardTop
+	boardInfo.status = gameState.status
+	boardInfo.internalPointer = &gameState
+
+	return boardInfo
+}
+*/
+
 // initNode initializes an empty node with given integer id.
 func initNode(i int) *node {
 	var x node

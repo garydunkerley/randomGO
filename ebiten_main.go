@@ -2,7 +2,7 @@ package main
 
 import (
 	game "github.com/garydunkerley/randomGO/internal/game"
-	"math"
+	// "math"
 
 	_ "image/png"
 	"log"
@@ -11,21 +11,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
-// declaring the gameState struct
-var state game.boardState
+// boardInfo holds all information relevant to the creation and arrangment of
+// the various assets the game will be using during play
+var boardInfo game.EbitenBoardInfo
 
-// some global parameters
+// Global parameters
 
 var isRandom bool
-
-// declaring graphical assets
-
-var wood *ebiten.Image
-var graph *ebiten.Image
-var whiteStone *ebiten.Image
-var blackStone *ebiten.Image
-
-// numeric variables we may wish to fix
 
 // stoneRadius will tell us how large our stone assets should be
 var stoneRadius float64
@@ -35,24 +27,18 @@ var stoneRadius float64
 
 var buttonRadius float64
 
-// some values to be used for rescaling the graph
+// Variables corresponding to graphical assets
+var wood *ebiten.Image
+var graph *ebiten.Image
+var whiteStone *ebiten.Image
+var blackStone *ebiten.Image
 
-func init() {
-	var err error
+// numeric variables we may wish to fix
 
-	state, isRandom = game.EbitenRandomGame(300, 10)
-	game.MakeEbitenGraphAsset(state.GoGraph, isRandom)
-
-	wood, _, err = ebitenutil.NewImageFromFile("assets/woodgrain3.png")
-
-	graph, _, err = ebitenutil.NewImageFromFile("assets/temporary/board.png")
-	whiteStone, _, err = ebitenutil.NewImageFromFile("assets/go_stone_white.png")
-	blackStone, _, err = ebitenutil.NewImageFromFile("assets/go_stone_black.png")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
+type ebitenNode struct {
+	picture    *ebiten.Image
+	id         int
+	xPos, yPos float64
 }
 
 type Game struct{}
@@ -77,10 +63,10 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func (g *Game) Draw(screen *ebiten.Image) {
 
-	// draws the wood for the board
+	// Draws the wood for the board
 	screen.DrawImage(wood, nil)
 
-	// adds the graph produced by graphviz
+	// Adds the graphviz PNG asset
 	// with suitable translation and rescaling
 	// to ensure that it is centered
 
@@ -101,12 +87,23 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.DrawImage(graph, graphPos)
 }
 
-// this struct will track the stone objects as they occur in the game
+func init() {
+	var err error
 
-type ebitenNode struct {
-	picture    *ebiten.Image
-	id         int
-	xPos, yPos float64
+	// we initialize the board topology and generate the
+	// PNG file for the graph defining our goban
+	boardInfo, isRandom = game.BuildRandomGame(100)
+
+	// populate all Ebiten assets with their relevant files
+	wood, _, err = ebitenutil.NewImageFromFile("assets/woodgrain3.png")
+	graph, _, err = ebitenutil.NewImageFromFile("assets/temporary/board.png")
+	whiteStone, _, err = ebitenutil.NewImageFromFile("assets/go_stone_white.png")
+	blackStone, _, err = ebitenutil.NewImageFromFile("assets/go_stone_black.png")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 /*
@@ -145,5 +142,5 @@ func main() {
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
-	game.state.EbitenRunGame(isRandom)
+	game.StartGame(boardInfo, isRandom)
 }

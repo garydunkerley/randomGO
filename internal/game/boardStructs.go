@@ -40,7 +40,7 @@ type boardTop struct {
 // GoGraph holds board topology and maps node IDs to their strings and *nodes.
 type GoGraph struct {
 	nodes    map[int]*node
-	stringOf map[int]stoneString // Maps node ID to its containing string
+	stringOf map[int]stoneString // Maps node ID to   its containing string
 	boardTop
 }
 
@@ -49,6 +49,15 @@ type boardState struct {
 	GoGraph
 	status
 	history
+}
+
+// EbitenBoardInfo is an exported struct containing all the information that Ebiten needs
+// to make graphical updates during play and to determine when play has ended and to begin scoring mode.
+type EbitenBoardInfo struct {
+	colorAssignments map[int]int8      // what assets will be used?
+	PNGcoords        map[int][]float64 // where should they be positioned?
+	boardTop
+	status
 }
 
 // addStones adds the given string to the appropriate color complex,
@@ -148,16 +157,19 @@ type status struct {
 	ongoing     bool // true if game has not finished
 }
 
+type SimpleHistory struct {
+	moves       []move
+	whitePoints int
+	blackPoints int
+	moveCount   int
+}
+
 // history stores pointer-free metadata for previous moves in game.
-// TODO: Zobrist hashing.
-// TODO: reconstruct a board state from a history object.
 type history struct {
-	moves             []move             // The move history does not store passes.
+	SimpleHistory
+
 	allStoneStrings   []chromaticStrings // Stores all groups. Does not update on passes.
-	moveCount         int                // The move count is incremented by passes.
 	consecutivePasses int                // Incremented by passes, reset to 0 by non-pass moves.
-	whitePoints       int                // Accumulated points for white (komi, if any, plus captures)
-	blackPoints       int                // Accumulated points for black (captures)
 	koHistory         []simpleKo         // stores ko points
 }
 
@@ -168,7 +180,7 @@ type simpleKo struct {
 
 // move is a moveInput and the associated number of captures made with the move
 
-// treeNode objects comprise the nodes in the game tree structure. These objects contain a move,
+// treeNode objects encode information about the game tree
 type treeNode struct {
 	value    move
 	parent   *treeNode
@@ -191,6 +203,7 @@ type moveInput struct {
 	isPass      bool // True if the player passed. Intentional redundancy: if node ID is -1, isPass is true.
 }
 
+// xEnclosedRegion is a struct that is used for scoring
 type xEnclosedRegion struct {
 	region        map[*node]bool
 	boundaryColor int8
