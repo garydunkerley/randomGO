@@ -9,7 +9,7 @@ import (
 
 // makeNaiveRandomBoard creates a board topology on n nodes such that
 // any two nodes are connected via an edge with a fixed probability.
-// This is decrepitated by the newer function that makes baords that
+// This is deprecated by the newer function that makes boards that
 // are planar and more likely to be fun to play on.
 func makeNaiveRandomBoard(n int, prob float64) boardTop {
 	var ourTopology boardTop
