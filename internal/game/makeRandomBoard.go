@@ -322,6 +322,14 @@ func getCircuit(n int, edges map[int][]int) map[int][]int {
 // A particular spanning tree will be protected to ensure that the resulting graph is always connected
 func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][2]float64) map[int][]int {
 
+	safeEdges := initSafeEdges(n, edges)
+
+	safeEdges = removeRandomCandidates(coordMap, safeEdges, edges)
+
+	return safeEdges
+}
+
+func initSafeEdges(n int, edges map[int][]int) map[int][]int {
 	safeEdges := make(map[int][]int)
 
 	// declare all edges in the circuit to be safe from elimination
@@ -331,49 +339,37 @@ func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][2]float64) map[
 	for i := 0; i < n; i++ {
 		safeEdges[i] = circuit[i]
 	}
+	return safeEdges
 
-	for i := 0; i < n; i++ {
+}
 
-		var validEdges []int
+func removeRandomCandidates(coordMap map[int][2]float64, safeEdges map[int][]int, edges map[int][]int) map[int][]int {
 
-		// iterate over all the edges attached to a node i and check to see if they are
-		// safe (i.e. that they belong to the circuit computed earlier or they have
-		// survived a roll already)
-		// edges that are not safe may be subject to elimination when the rolling occurs.
-		for _, edge := range edges[i] {
-			isSafe := false
-			for _, safeEdge := range safeEdges[i] {
-				if edge == safeEdge {
-					isSafe = true
-					break
-				}
-			}
-			if !isSafe {
-				validEdges = append(validEdges, edge)
-			}
-		}
+	for i := 0; i < len(coordMap); i++ {
 
+		candidateEdges := getRemovalCandidates(i, safeEdges, edges)
 		// if a node has an unsafe edge, then its edges will be subjected to
 		// a random elimination process
-		if len(validEdges) > 0 {
+
+		if len(candidateEdges) > 0 {
 			norm := euclideanNorm(coordMap[i])
 
 			stillRolling := true
-			for stillRolling && len(validEdges) > 2 {
+			for stillRolling && len(candidateEdges) > 2 {
 
 				//TODO: tweak this until I get something I like.
 				// Right now, being farther away from the center increases the likelihood that
 				// a node will lose and edge as does having a lot of edges
 
-				prob := math.Pi / (2 * math.Pow(math.Atan(norm+0.05), float64(6-len(validEdges))))
+				prob := math.Pi / (2 * math.Pow(math.Atan(norm+0.05), float64(6-len(candidateEdges))))
 				// prob := float64(0)
 				rand.Seed(time.Now().UnixNano())
 				v := rand.Float64()
 
 				if v < prob {
-					randomIndex := rand.Intn(len(validEdges))
+					randomIndex := rand.Intn(len(candidateEdges))
 
-					validEdges = append(validEdges[:randomIndex], validEdges[randomIndex+1:]...)
+					candidateEdges = append(candidateEdges[:randomIndex], candidateEdges[randomIndex+1:]...)
 				} else {
 					stillRolling = false
 				}
@@ -381,17 +377,41 @@ func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][2]float64) map[
 			}
 
 			// all edges that survive this process are declared to be safe
-			if len(validEdges) > 0 {
-				for j := 0; j < len(validEdges)-1; j++ {
+			if len(candidateEdges) > 0 {
+				for j := 0; j < len(candidateEdges)-1; j++ {
 
-					safeEdges[validEdges[j]] = append(safeEdges[validEdges[j]], i)
-					safeEdges[i] = append(safeEdges[i], validEdges[j])
+					safeEdges[candidateEdges[j]] = append(safeEdges[candidateEdges[j]], i)
+					safeEdges[i] = append(safeEdges[i], candidateEdges[j])
 				}
 			}
 		}
 	}
 
 	return safeEdges
+
+}
+
+func getRemovalCandidates(i int, safeEdges map[int][]int, edges map[int][]int) []int {
+	var candidateEdges []int
+
+	// iterate over all the edges attached to a node i and check to see if they are
+	// safe (i.e. that they belong to the circuit computed earlier or they have
+	// survived a roll already)
+	// edges that are not safe may be subject to elimination when the rolling occurs.
+	for _, edge := range edges[i] {
+		isSafe := false
+		for _, safeEdge := range safeEdges[i] {
+			if edge == safeEdge {
+				isSafe = true
+				break
+			}
+		}
+		if !isSafe {
+			candidateEdges = append(candidateEdges, edge)
+		}
+	}
+	return candidateEdges
+
 }
 
 // makeRandomBoard begins by generating a hexagonal lattice on n points
