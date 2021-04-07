@@ -55,7 +55,7 @@ func sum(array []int) int {
 }
 
 // euclideanNorm gets the magnitude of a point as a vector in two-dimensional Euclidean space
-func euclideanNorm(x []float64) float64 {
+func euclideanNorm(x [2]float64) float64 {
 	var sum float64
 	for i := 0; i < len(x); i++ {
 		sum += math.Pow(x[i], 2)
@@ -63,15 +63,17 @@ func euclideanNorm(x []float64) float64 {
 	return math.Sqrt(sum)
 }
 
-func vecSum(x []float64, y []float64) []float64 {
-	var z []float64
+// vecSum just takes two floating point arrays of length two and finds their coordinate-wise sum
+func vecSum(x [2]float64, y [2]float64) [2]float64 {
+	var z [2]float64
 	for i := 0; i < len(x); i++ {
-		z = append(z, x[i]+y[i])
+		z[i] = x[i] + y[i]
 	}
 	return z
 }
 
 // getHexagonalNumbers computes a slice of centered hexagonal numbers less than or equal to n
+// For more information, see: https://oeis.org/A003215
 func getCenteredHexagonalNumbers(n int) []int {
 	var hexNums []int
 	// var newHexNums []int
@@ -98,13 +100,13 @@ func getCenteredHexagonalNumbers(n int) []int {
 
 // getHexagonalLattice takes an integer and outputs the edges and nodes of a
 // normal hexagonal lattice in two-dimensional Euclidean space
-func getHexagonalLattice(n int) (map[int][]int, map[int][]float64) {
+func getHexagonalLattice(n int) (map[int][]int, map[int][2]float64) {
 
 	theta := math.Pi / 6
 	multiplier := float64(0)
 
 	edges := make(map[int][]int)
-	coordMap := make(map[int][]float64)
+	coordMap := make(map[int][2]float64)
 
 	// roomsMade will track how far we have iterated along
 	// direction to create a layer in Pascal's triangle.
@@ -116,12 +118,12 @@ func getHexagonalLattice(n int) (map[int][]int, map[int][]float64) {
 
 	// the first node will be centered at the coordinate 0,0
 
-	currentVec := []float64{0, 0}
+	currentVec := [2]float64{0, 0}
 	coordMap[0] = currentVec
 
 	// we will also initialize the direction of generation
 	// as being trivial
-	genDirection := []float64{0, 0}
+	genDirection := [2]float64{0, 0}
 
 	hexNums := getCenteredHexagonalNumbers(n)
 	hexIterate := 0
@@ -136,7 +138,7 @@ func getHexagonalLattice(n int) (map[int][]int, map[int][]float64) {
 			// node that was seen previously
 			currentVec = vecSum(currentVec, genDirection)
 			multiplier = 0
-			genDirection = []float64{1, 0}
+			genDirection = [2]float64{1, 0}
 
 			if hexIterate < len(hexNums)-1 {
 				hexIterate += 1
@@ -217,7 +219,7 @@ func getHexagonalLattice(n int) (map[int][]int, map[int][]float64) {
 		if cellsMade == hexIterate {
 
 			multiplier = float64((int(multiplier) + 1) % 6)
-			genDirection = []float64{math.Sin(multiplier * theta), math.Cos(multiplier * theta)}
+			genDirection = [2]float64{math.Sin(multiplier * theta), math.Cos(multiplier * theta)}
 			cellsMade = 0
 
 		}
@@ -225,15 +227,19 @@ func getHexagonalLattice(n int) (map[int][]int, map[int][]float64) {
 		counter += 1
 	}
 
-	for i := 0; i < n; i++ {
-		slice := edges[i]
-		ascendingSlice := makeAscending(slice)
-		edges[i] = ascendingSlice
-	}
+	/*
+		TODO Deprecate this and make ascending as these are not necessary
+		for i := 0; i < n; i++ {
+			slice := edges[i]
+			 ascendingSlice := makeAscending(slice)
+			 edges[i] = ascendingSlice
+		}
+	*/
 
 	return edges, coordMap
 }
 
+/*
 // makeAscending rearranges an integer slice so that its elements are in ascending order
 func makeAscending(mySlice []int) []int {
 
@@ -259,6 +265,7 @@ func makeAscending(mySlice []int) []int {
 
 	return ascendingSlice
 }
+*/
 
 // getCircuit takes our collection of edges and outputs an
 // encoding of a spanning tree
@@ -313,7 +320,7 @@ func getCircuit(n int, edges map[int][]int) map[int][]int {
 // The process looks at how far the associated coordinate is from the center and uses this distance
 // to determine the probability that the node will lose and edge and which one.
 // A particular spanning tree will be protected to ensure that the resulting graph is always connected
-func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][]float64) map[int][]int {
+func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][2]float64) map[int][]int {
 
 	safeEdges := make(map[int][]int)
 
@@ -386,20 +393,6 @@ func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][]float64) map[i
 
 	return safeEdges
 }
-
-/*
-func addBoundaryEdges(n int, edges map[int][]int) map[int][]int {
-//TODO make a map that will be guaranteed a planar representation.
-
-	hexNums := getHexagonalNumbers(n)
-
-	boundary = []int
-
-	// TODO how to find the boundary?
-
-return
-}
-*/
 
 // makeRandomBoard begins by generating a hexagonal lattice on n points
 // and then runs through a procedure to make edges more sparse
