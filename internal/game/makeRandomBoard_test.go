@@ -20,3 +20,10 @@ func BenchmarkGetLatticeAndSparsify(b *testing.B) {
 		_ = sparsifyEdges(100, edges, coords)
 	}
 }
+
+func BenchmarkGetCircuit(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		edges, _ := getHexagonalLattice(100)
+		_ = getCircuit(100, edges)
+	}
+}

@@ -9,7 +9,7 @@ import (
 
 // makeNaiveRandomBoard creates a board topology on n nodes such that
 // any two nodes are connected via an edge with a fixed probability.
-// This is deprecated by the newer function that makes boards that
+// This is decrepitated by the newer function that makes baords that
 // are planar and more likely to be fun to play on.
 func makeNaiveRandomBoard(n int, prob float64) boardTop {
 	var ourTopology boardTop
@@ -339,7 +339,7 @@ func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][2]float64) map[
 		// iterate over all the edges attached to a node i and check to see if they are
 		// safe (i.e. that they belong to the circuit computed earlier or they have
 		// survived a roll already)
-		// edges that are not safe may be subject to elimination when the rolling ovvurs.
+		// edges that are not safe may be subject to elimination when the rolling occurs.
 		for _, edge := range edges[i] {
 			isSafe := false
 			for _, safeEdge := range safeEdges[i] {
@@ -353,7 +353,7 @@ func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][2]float64) map[
 			}
 		}
 
-		// if a node has more than 2 edges, then its edges will be subjected to
+		// if a node has an unsafe edge, then its edges will be subjected to
 		// a random elimination process
 		if len(validEdges) > 0 {
 			norm := euclideanNorm(coordMap[i])
