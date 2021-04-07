@@ -11,10 +11,6 @@ Boards are created by constructing a regular equilateral lattice (no position ha
  - Fix capturing error (captured stones aren't treated as liberties?)
  - Fix score estimator
  - Tweak random board generation
- - Make boards look prettier 
- - Implement Zobrist hashing for super ko rule
- - Create format for random games
- - Create UI
- - Create algorithms to play random games
- - Develop network play
+ - Implement Zobrist hash for super ko
+ - Reorganize code into event / command scripts
 
