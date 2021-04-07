@@ -31,10 +31,10 @@ type chromaticStrings struct {
 // boardTop stores the information to construct a game board.
 type boardTop struct {
 	edges           map[int][]int
-	nodeCount       int               // We have node ids in the range [0, nodeCount - 1]
-	coords          map[[2]int]int    // optional, for boards with nice 2d representations
-	coordBounds     []int             // optional, for example, [9,9] for a 9 by 9 board
-	cartesianCoords map[int][]float64 // optional, used for visualizing random boards
+	nodeCount       int                // We have node ids in the range [0, nodeCount - 1]
+	coords          map[[2]int]int     // optional, for boards with nice 2d representations
+	coordBounds     []int              // optional, for example, [9,9] for a 9 by 9 board
+	cartesianCoords map[int][2]float64 // optional, used for visualizing random boards
 }
 
 // GoGraph holds board topology and maps node IDs to their strings and *nodes.
