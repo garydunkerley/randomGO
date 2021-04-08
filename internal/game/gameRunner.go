@@ -203,6 +203,10 @@ func (gameState boardState) runGame(boardInfo EbitenBoardInfo, isRandom bool) {
 		// This should force an image of the board to come up.
 		visualizeBoard(gameState.GoGraph, isRandom, dead)
 	}
+}
+
+func (gameState *boardState) beginScoring() {
+
 	ass := gameState.history.allStoneStrings
 	cs := ass[len(ass)-1]
 
@@ -211,6 +215,7 @@ func (gameState boardState) runGame(boardInfo EbitenBoardInfo, isRandom bool) {
 	fmt.Println("I think the score should be: ")
 	fmt.Println("Black:", blackScore)
 	fmt.Println("White:", whiteScore)
+
 }
 
 // StartRectangularGame initializes an n-by-m board and runs a CLI game.
