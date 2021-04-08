@@ -188,9 +188,9 @@ func initEbitenStone(stoneid int, g *cgraph.Graph) *cgraph.Node {
 
 // constructAllEbitenStones performs the same function as
 // constructAllStones but is set up to output a plain graph to
-// be used as an asset in Ebiten and to accept as input the boardTop field
+// be used as an asset in Ebiten and to accept as input the BoardTop field
 // in the exported EbitenBoardInfo struct
-func constructAllEbitenStones(myTopology boardTop, g *cgraph.Graph) map[int]*cgraph.Node {
+func constructAllEbitenStones(myTopology BoardTop, g *cgraph.Graph) map[int]*cgraph.Node {
 	transChart := make(map[int]*cgraph.Node)
 
 	// for each node in our GoGraph, we initialize a stone
@@ -203,8 +203,8 @@ func constructAllEbitenStones(myTopology boardTop, g *cgraph.Graph) map[int]*cgr
 
 }
 
-// constructAllEbitenEdges performs the same function as construct all edges but accepts as input the boardTop field from the exported EbitenBoardInfo struct
-func constructAllEbitenEdges(myTopology boardTop, t map[int]*cgraph.Node, g *cgraph.Graph) {
+// constructAllEbitenEdges performs the same function as construct all edges but accepts as input the BoardTop field from the exported EbitenBoardInfo struct
+func constructAllEbitenEdges(myTopology BoardTop, t map[int]*cgraph.Node, g *cgraph.Graph) {
 
 	edgeMade := make(map[string]bool)
 
@@ -247,7 +247,7 @@ func constructAllEbitenEdges(myTopology boardTop, t map[int]*cgraph.Node, g *cgr
 // a PNG graph asset for Ebiten to use
 func makeEbitenGraphAsset(boardInfo EbitenBoardInfo, isRandom bool) {
 
-	myTopology := boardInfo.boardTop
+	myTopology := boardInfo.BoardTop
 
 	cwd := getWorkingDirectory()
 

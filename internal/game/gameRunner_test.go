@@ -34,7 +34,7 @@ func TestEdgeLiberties(t *testing.T) {
 	if libCount != 3 {
 		t.Logf("Edge test: expected 3 liberties, have %v", libCount)
 		t.Logf("Liberty IDs: %v", getLiberties(state.nodes[ID]))
-		t.Logf("Edge IDs (boardTop): %v", state.edges[ID])
+		t.Logf("Edge IDs (BoardTop): %v", state.edges[ID])
 		t.Logf("Neighbor count (node-level): %v",
 			len(state.nodes[ID].neighbors))
 		for _, y := range state.nodes[ID].neighbors {
@@ -57,7 +57,7 @@ func TestCornerLiberties(t *testing.T) {
 	if libCount != 2 {
 		t.Logf("Corner test: expected 2 liberties, have %v", libCount)
 		t.Logf("Liberty IDs: %v", getLiberties(state.nodes[ID]))
-		t.Logf("Edge IDs (boardTop): %v", state.edges[ID])
+		t.Logf("Edge IDs (BoardTop): %v", state.edges[ID])
 		t.Logf("Neighbor count (node-level): %v",
 			len(state.nodes[ID].neighbors))
 		for _, y := range state.nodes[ID].neighbors {
@@ -80,7 +80,7 @@ func TestCenterLiberties(t *testing.T) {
 	if libCount != 4 {
 		t.Logf("Corner test: expected 4 liberties, have %v", libCount)
 		t.Logf("Liberty IDs: %v", getLiberties(state.nodes[ID]))
-		t.Logf("Edge IDs (boardTop): %v", state.edges[ID])
+		t.Logf("Edge IDs (BoardTop): %v", state.edges[ID])
 		t.Logf("Neighbor count (node-level): %v",
 			len(state.nodes[ID].neighbors))
 		for _, y := range state.nodes[ID].neighbors {

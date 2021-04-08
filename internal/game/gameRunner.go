@@ -222,7 +222,7 @@ func (gameState *boardState) beginScoring() {
 func BuildRectangularGame(n int, m int) (EbitenBoardInfo, bool) {
 	var boardInfo EbitenBoardInfo
 
-	boardInfo.boardTop = makeSquareBoard(n, m)
+	boardInfo.BoardTop = makeSquareBoard(n, m)
 	makeEbitenGraphAsset(boardInfo, false)
 
 	return boardInfo, false
@@ -231,7 +231,7 @@ func BuildRectangularGame(n int, m int) (EbitenBoardInfo, bool) {
 func BuildRandomGame(n int) (EbitenBoardInfo, bool) {
 	var boardInfo EbitenBoardInfo
 
-	boardInfo.boardTop = makeRandomBoard(n)
+	boardInfo.BoardTop = makeRandomBoard(n)
 	makeEbitenGraphAsset(boardInfo, true)
 
 	return boardInfo, true
@@ -240,7 +240,7 @@ func BuildRandomGame(n int) (EbitenBoardInfo, bool) {
 
 func StartGame(boardInfo EbitenBoardInfo, isRandom bool) {
 
-	state := initBoardState(boardInfo.boardTop, 10)
+	state := initBoardState(boardInfo.BoardTop, 10)
 	boardInfo = state.updateEbitenBoardInfo(boardInfo)
 
 	state.runGame(boardInfo, isRandom)

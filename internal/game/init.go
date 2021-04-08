@@ -2,7 +2,7 @@ package game
 
 //graph() initializes a goGraph from the given topology.
 //TODO add node connections
-func (a *boardTop) initGraph() GoGraph {
+func (a *BoardTop) initGraph() GoGraph {
 	nodes := make(map[int]*node)
 	for i := 0; i < a.nodeCount; i++ {
 		newNode := initNode(i)
@@ -12,7 +12,7 @@ func (a *boardTop) initGraph() GoGraph {
 	G := GoGraph{
 		nodes:    nodes,
 		stringOf: make(map[int]stoneString),
-		boardTop: *a,
+		BoardTop: *a,
 	}
 
 	for i := 0; i < a.nodeCount; i++ {
@@ -39,7 +39,7 @@ func (gameState boardState) initEbitenBoardInfo() EbitenBoardInfo {
 	var boardInfo EbitenBoardInfo
 
 	boardInfo.colorAssignments = gameState.GoGraph.getColorAssignments()
-	boardInfo.boardTop = gameState.GoGraph.boardTop
+	boardInfo.BoardTop = gameState.GoGraph.BoardTop
 	boardInfo.status = gameState.status
 	boardInfo.internalPointer = &gameState
 
@@ -58,7 +58,7 @@ func initNode(i int) *node {
 // initBoardState initializes a board state with empty history,
 // black to move, game not ongoing.
 // world's lowest priority TODO: fractional komi
-func initBoardState(a boardTop, komi int) (X boardState) {
+func initBoardState(a BoardTop, komi int) (X boardState) {
 	X.GoGraph = a.initGraph()
 	//X.status needs no initialization
 	X.history.moves = make([]move, 0)

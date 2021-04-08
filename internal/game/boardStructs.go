@@ -28,8 +28,8 @@ type chromaticStrings struct {
 	white []stoneString
 }
 
-// boardTop stores the information to construct a game board.
-type boardTop struct {
+// BoardTop stores the information to construct a game board.
+type BoardTop struct {
 	edges           map[int][]int
 	nodeCount       int                // We have node ids in the range [0, nodeCount - 1]
 	coords          map[[2]int]int     // optional, for boards with nice 2d representations
@@ -41,7 +41,7 @@ type boardTop struct {
 type GoGraph struct {
 	nodes    map[int]*node
 	stringOf map[int]stoneString // Maps node ID to   its containing string
-	boardTop
+	BoardTop
 }
 
 // boardState stores a current game state, including history
@@ -56,7 +56,7 @@ type boardState struct {
 type EbitenBoardInfo struct {
 	colorAssignments map[int]int8      // what assets will be used?
 	PNGcoords        map[int][]float64 // where should they be positioned?
-	boardTop
+	BoardTop
 	status
 }
 

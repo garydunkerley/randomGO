@@ -1,9 +1,9 @@
 package game
 
 // makeSquareBoard returns a rectangular board topology.
-func makeSquareBoard(n int, m int) boardTop {
+func makeSquareBoard(n int, m int) BoardTop {
 
-	var ourTopology boardTop
+	var ourTopology BoardTop
 
 	edges := make(map[int][]int)
 	coords := make(map[[2]int]int)

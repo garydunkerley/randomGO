@@ -22,7 +22,7 @@ func sgfToString() string {
 // Really, this thing should search through the file for the string "SZ[" and then output whatever integer appears after it. We can't assume that line number reading will always work.
 // Generalize later so that it just generates the appropriate board topology for a game.
 /*
-func getSquareBoardFromSGF(sgfString []string) boardTop, error {
+func getSquareBoardFromSGF(sgfString []string) BoardTop, error {
 	boardSize, err := strconv.Atoi(strings.Trim(sgfString[12], "SZ[]"))
 	if err == nil {
 		myBoard := makeSquareBoard(boardSize, boardSize)

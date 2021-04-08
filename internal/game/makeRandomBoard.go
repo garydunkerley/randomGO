@@ -12,8 +12,8 @@ import (
 // any two nodes are connected via an edge with a fixed probability.
 // This is decrepitated by the newer function that makes baords that
 // are planar and more likely to be fun to play on.
-func makeNaiveRandomBoard(n int, prob float64) boardTop {
-	var ourTopology boardTop
+func makeNaiveRandomBoard(n int, prob float64) BoardTop {
+	var ourTopology BoardTop
 
 	edges := make(map[int][]int)
 
@@ -401,8 +401,8 @@ func getRemovalCandidates(i int, safeEdges map[string]bool, edges map[int][]int)
 
 // makeRandomBoard begins by generating a hexagonal lattice on n points
 // and then runs through a procedure to make edges more sparse
-func makeRandomBoard(n int) boardTop {
-	var ourTopology boardTop
+func makeRandomBoard(n int) BoardTop {
+	var ourTopology BoardTop
 	ourTopology.nodeCount = n
 
 	tempEdges, coords := getHexagonalLattice(n)
