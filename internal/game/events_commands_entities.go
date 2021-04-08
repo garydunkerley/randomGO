@@ -4,6 +4,7 @@ type Event interface {
 	isEvent()
 }
 
+/*
 //TODO: when this event occurs, both players are informed
 // of the pending challenge
 type ChallengeIssued struct {
@@ -38,14 +39,18 @@ type ChallengeIssued struct {
 	timeStructure
 }
 
+
 func (e ChallengeIssued) isEvent() {}
+
 
 type ChallengeAccepted struct {
 	gameID string
 }
 
 func (e ChallengeAccepted) isEvent() {}
+*/
 
+/*
 // an event that triggers after both players have
 // submitted their votes for whether the board should
 // be rerolled.
@@ -57,34 +62,73 @@ type rerollVoteCompleted struct {
 }
 
 func (e rerollVoteCompleted) isEvent() {}
+*/
 
-// gameInitialized is an event that records who is black, who is white, and what the gameID is
-type gameInitialized struct {
-	black  string
-	white  string
-	gameID string
+// user entity is defined by a unique int id and a name string
+type user struct {
+	name string
+	id   int
 }
 
-func (e gameInitialized) isEvent() {}
-
-// this struct has less information than the
-// internal boardState struct and is intended
-// to interface between the backend and Ebiten
-type BoardUpdate struct {
-	newStone      int
-	newStoneColor int8
-
-	newBlankStones []int
-
-	blackCaptures int
-	whiteCaptures int
-	numberOfPlays int
-
-	consecutivePasses int
+// mockUserDatabase entity tracks multiple users and ensures unique user ids
+type mockUserDatabase struct {
+	userLookup map[int]user // look up a user by ID
+	nextUserID int          // track largest nonnegative ID that has not been used
 }
 
-func (e BoardUpdate) isEvent() {}
+// addUser creates a new user from given username and increments nextUserID
+func (db *mockUserDatabase) addUser(username string) {
+	newID := db.nextUserID
+	newUser := user{name: username, id: newID}
+	db.userLookup[newID] = newUser
+	db.nextUserID++
+}
 
+// createUserDB instantiates a new mockUserDatabase
+func createUserDB() mockUserDatabase {
+	users := make(map[int]user)
+	return mockUserDatabase{userLookup: users}
+}
+
+// gameInstance is defined by a unique int id and two users
+// TODO: add something which connects to game logic
+type gameInstance struct {
+	black  user
+	white  user
+	gameID int
+}
+
+// mockGameDatabase entity tracks multiple games and ensures unique game ids
+type mockGameDatabase struct {
+	gameLookup map[int]gameInstance // look up a game by ID
+	nextGameID int                  // track largest nonnegative ID that has not been used
+}
+
+// addGame creates a new game between given users and increments nextGameID
+func (db *mockGameDatabase) addGame(blackPlayer user, whitePlayer user) {
+	newID := db.nextGameID
+	newGame := gameInstance{black: blackPlayer, white: whitePlayer, id: newID}
+	db.gameLookup[newID] = newGame
+	db.nextGameID++
+}
+
+// createGameDB instantiates a new mockGameDatabase
+func createGameDB() mockGameDatabase {
+	games := make(map[int]gameInstance)
+	return mockGameDatabase{gameLookup: games}
+}
+
+// StoneUpdate describes a set of stone deltas, e.g. the consequence of
+// playing a given move, loading an initial handicap, or loading a past game.
+// TODO: Client's board state should be able to execute StoneUpdate as a command
+type StoneUpdate struct {
+	stones map[int]int8 // pairings of (stone id): (new color)
+	err    error
+}
+
+// TODO: Client needs a command to request a StoneUpdate (i.e. try to play a move and receive StoneUpdate)
+
+/*
 type EnteredScoring struct {
 	gameID string
 }
@@ -106,6 +150,10 @@ func (e GameEnded) isEvent() {}
 
 //TODO determine what other commands someone is likely to need to be able to issue to
 // interact with the application
+*/
+
+//TODO: sort out command structuring and GameInput.
+// Who's responsible for receiving inputs? What's the communication model?
 
 type Command interface {
 	isCommand()
@@ -134,6 +182,7 @@ func (c GameInput) issuer() string {
 	return c.commandIssuer
 }
 
+/*
 type ChatInput struct {
 	commandIssuer string
 
@@ -146,7 +195,9 @@ func (c ChatInput) isCommand() {}
 func (c ChatInput) issuer() string {
 	return c.commandIssuer
 }
+*/
 
+/*
 // It stands to reason that when generating a board, one or more
 // players may be unsatisfied with the outcome, especially since
 // there are low probability boards that are really bad, like,
@@ -230,7 +281,9 @@ type PlayerList struct {
 	// Player structs
 	players map[string]Player
 }
+*/
 
+// TODO: rewrite this struct after determining communication model
 type Game struct {
 	gameID     string
 	gameName   string
@@ -257,8 +310,10 @@ type Game struct {
 	gameData string
 }
 
+/* NOTE: think this is deprecated by the mock dbs --jr
 // we can construct these by looking at Games that are the subject of an initialization event
 // but not an ending event.
 type OngoingGames struct {
 	ongoingGames []Game
 }
+*/
