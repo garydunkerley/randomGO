@@ -4,8 +4,11 @@ type Event interface {
 	isEvent()
 }
 
+//TODO: when this event occurs, both players are informed
+// of the pending challenge
 type ChallengeIssued struct {
 	// metadata
+	gameID string
 
 	// TODO determine proper format for recording time?
 	// defaulting to a string for the time being
@@ -36,6 +39,24 @@ type ChallengeIssued struct {
 }
 
 func (e ChallengeIssued) isEvent() {}
+
+type ChallengeAccepted struct {
+	gameID string
+}
+
+func (e ChallengeAccepted) isEvent() {}
+
+// an event that triggers after both players have
+// submitted their votes for whether the board should
+// be rerolled.
+
+type rerollVoteCompleted struct {
+	gameID    string
+	whiteVote bool
+	blackVote bool
+}
+
+func (e rerollVoteCompleted) isEvent() {}
 
 // gameInitialized is an event that records who is black, who is white, and what the gameID is
 type gameInitialized struct {
@@ -126,6 +147,25 @@ func (c ChatInput) issuer() string {
 	return c.commandIssuer
 }
 
+// It stands to reason that when generating a board, one or more
+// players may be unsatisfied with the outcome, especially since
+// there are low probability boards that are really bad, like,
+// almost every node is valence two. It would be good
+// to allow for the board to be reconstructed some limited number
+// of times before play begins to make sure everyone is
+// reasonably satisfied with the goban they will be playing on
+type gobanRerollVote struct {
+	commandIssuer string
+
+	vote bool
+}
+
+func (c gobanRerollVote) isCommand() {}
+
+func (c gobanRerollVote) issuer() string {
+	return c.commandIssuer
+}
+
 type ChallengePlayer struct {
 	commandIssuer string
 
@@ -175,10 +215,14 @@ type timeStructure struct {
 }
 
 type Player struct {
-	playerid     string
-	currentGames []string
-	pastGames    []string
-	rank         int
+	playerid       string
+	profilePicture string // URL (probably to Imgur) to import profilePictures
+	nationality    string
+	activeGames    []string
+	pastGames      []string
+	rank           int
+
+	// additional statistics, like percentage of games won, etc
 }
 
 type PlayerList struct {
@@ -189,6 +233,7 @@ type PlayerList struct {
 
 type Game struct {
 	gameID     string
+	gameName   string
 	whiteID    string
 	blackID    string
 	dateOfGame string
@@ -212,8 +257,8 @@ type Game struct {
 	gameData string
 }
 
-// we can construct these by looking at Games that
-// do not have a victor yet.
+// we can construct these by looking at Games that are the subject of an initialization event
+// but not an ending event.
 type OngoingGames struct {
-	currentGames []Game
+	ongoingGames []Game
 }
