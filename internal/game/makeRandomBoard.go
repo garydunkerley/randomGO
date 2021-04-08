@@ -371,13 +371,13 @@ func removeRandomCandidates(coordMap map[int][2]float64, safeEdges map[string]bo
 			norm := euclideanNorm(coordMap[i])
 
 			stillRolling := true
-			for stillRolling && len(candidateEdges) > 2 {
+			for stillRolling && len(candidateEdges) > 1 {
 
 				//TODO: tweak this until I get something I like.
 				// Right now, being farther away from the center increases the likelihood that
 				// a node will lose and edge as does having a lot of edges
 
-				prob := math.Pi / (2 * math.Pow(math.Atan(norm+0.05), float64(6-len(candidateEdges))))
+				prob := (2 * math.Pow(math.Atan(norm+2), float64(6-len(candidateEdges)))) / math.Pi
 				// prob := float64(0)
 				rand.Seed(time.Now().UnixNano())
 				v := rand.Float64()
