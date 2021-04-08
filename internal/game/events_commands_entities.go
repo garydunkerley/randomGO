@@ -11,16 +11,28 @@ type ChallengeIssued struct {
 	// defaulting to a string for the time being
 	timeIssued   string
 	challengerID string
+
+	// can be left blank so as to be a general challenge that
+	// anyone can accept (possibly with rank restrixtions thoguh)
 	challengedID string
-	// how long until the challenge expires, measured in seconds
+	// how long until the challenge expires, measured in seconds, possibly infinite
 	timeToRespond int
 
 	// game parameters
 	isRandom bool
 	komi     float64
 	size     int
+
+	// positive to benefit the challenger, negative to
+	// benefit the opponent
+	handicap int
+
 	isRanked bool
-	timer    timeStructure
+
+	// this is a struct that will determine how long the
+	// main part of the game will be, whether there are
+	// Byo-Yomi, how many, and how long.
+	timeStructure
 }
 
 func (e ChallengeIssued) isEvent() {}
@@ -35,9 +47,8 @@ type gameInitialized struct {
 func (e gameInitialized) isEvent() {}
 
 // this struct has less information than the
-// boardState struct which is used internally and
-// is intended to interface between the backend and
-// Ebiten
+// internal boardState struct and is intended
+// to interface between the backend and Ebiten
 type BoardUpdate struct {
 	newStone      int
 	newStoneColor int8
@@ -55,22 +66,19 @@ func (e BoardUpdate) isEvent() {}
 
 type EnteredScoring struct {
 	gameID string
-
-	blackCaptures int
-	whiteCapture  int
 }
 
 func (e EnteredScoring) isEvent() {}
 
+type ResumedFromScoring struct {
+	gameID string
+}
+
+func (e ResumedFromScoring) isEvent() {}
+
 type GameEnded struct {
 	// which game?
 	gameID string
-	// who is black?
-	black string
-	// who is white?
-	white string
-
-	whoWon string
 }
 
 func (e GameEnded) isEvent() {}
@@ -129,7 +137,7 @@ type ChallengePlayer struct {
 	komi     float64
 	size     int
 	handicap int
-	timer    timeStructure
+	timeStructure
 }
 
 func (c ChallengePlayer) isCommand() {}
@@ -185,21 +193,23 @@ type Game struct {
 	blackID    string
 	dateOfGame string
 	isRanked   bool
+	isRandom   bool
+	size       int
+	komi       float64
+	handicap   int
+	timeStructure
 
 	// string is empty if game is ongoing
 	victor string
+
+	blackScore float64
+	whiteScore float64
 
 	// chatLog records userid and text input as strings.
 	chatLog [][2]string
 
 	// TODO: create the file format for this
 	gameData string
-
-	isRandom bool
-	size     int
-	komi     float64
-	handicap int
-	timeStructure
 }
 
 // we can construct these by looking at Games that
