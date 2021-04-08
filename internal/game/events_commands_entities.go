@@ -6,6 +6,9 @@ type Event interface {
 
 type ChallengeIssued struct {
 	// metadata
+
+	// TODO determine proper format for recording time?
+	// defaulting to a string for the time being
 	timeIssued   string
 	challengerID string
 	challengedID string
@@ -31,6 +34,10 @@ type gameInitialized struct {
 
 func (e gameInitialized) isEvent() {}
 
+// this struct has less information than the
+// boardState struct which is used internally and
+// is intended to interface between the backend and
+// Ebiten
 type BoardUpdate struct {
 	newStone      int
 	newStoneColor int8
@@ -40,6 +47,8 @@ type BoardUpdate struct {
 	blackCaptures int
 	whiteCaptures int
 	numberOfPlays int
+
+	consecutivePasses int
 }
 
 func (e BoardUpdate) isEvent() {}
@@ -96,15 +105,31 @@ func (c GameInput) issuer() string {
 	return c.commandIssuer
 }
 
+type ChatInput struct {
+	commandIssuer string
+
+	gameID string
+	msg    string
+}
+
+func (c ChatInput) isCommand() {}
+
+func (c ChatInput) issuer() string {
+	return c.commandIssuer
+}
+
 type ChallengePlayer struct {
 	commandIssuer string
 
+	// can be empty to indicate that
+	// anyone may accept the challenge
 	challengedID string
-	isRandom     bool
-	komi         float64
-	size         int
-	handicap     int
-	timer        timeStructure
+
+	isRandom bool
+	komi     float64
+	size     int
+	handicap int
+	timer    timeStructure
 }
 
 func (c ChallengePlayer) isCommand() {}
@@ -120,6 +145,7 @@ type RespondToChallenge struct {
 	challengerID string
 
 	// what is its ID?
+	// challengeID will later pass to game ID
 	challengeID string
 
 	// was the challenge accepted?
@@ -130,10 +156,6 @@ func (c RespondToChallenge) isCommand() {}
 
 func (c RespondToChallenge) issuer() string {
 	return c.commandIssuer
-}
-
-type Entities interface {
-	isEntity()
 }
 
 type timeStructure struct {
@@ -163,7 +185,12 @@ type Game struct {
 	blackID    string
 	dateOfGame string
 	isRanked   bool
-	victor     string
+
+	// string is empty if game is ongoing
+	victor string
+
+	// chatLog records userid and text input as strings.
+	chatLog [][2]string
 
 	// TODO: create the file format for this
 	gameData string
