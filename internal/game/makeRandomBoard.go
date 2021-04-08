@@ -341,9 +341,8 @@ func removeRandomCandidates(coordMap map[int][2]float64, safeEdges map[string]bo
 
 				//TODO: tweak this until I get something I like.
 				// Right now, being farther away from the center increases the likelihood that
-				// a node will lose and edge as does having a lot of edges
+				// a node will lose an edge, as does having a lot of edges
 
-				//				fmt.Println("The norm of node ", i, " is ", norm)
 				prob := math.Pow((2*math.Atan(norm))/math.Pi, float64(4-len(candidateEdges)))
 				// prob := float64(0)
 				rand.Seed(time.Now().UnixNano())
