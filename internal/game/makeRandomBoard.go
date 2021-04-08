@@ -4,6 +4,7 @@ import (
 	// "fmt"
 	"math"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -269,7 +270,7 @@ func makeAscending(mySlice []int) []int {
 
 // getCircuit takes our collection of edges and outputs an
 // encoding of a spanning tree
-func getCircuit(n int, edges map[int][]int) map[int][]int {
+func getCircuitMap(n int, edges map[int][]int) map[int][]int {
 
 	var circuit []int
 
@@ -322,32 +323,47 @@ func getCircuit(n int, edges map[int][]int) map[int][]int {
 // A particular spanning tree will be protected to ensure that the resulting graph is always connected
 func sparsifyEdges(n int, edges map[int][]int, coordMap map[int][2]float64) map[int][]int {
 
-	safeEdges := initSafeEdges(n, edges)
+	safeEdges, circuitMap := initSafeEdges(n, edges)
 
-	safeEdges = removeRandomCandidates(coordMap, safeEdges, edges)
+	newEdges := removeRandomCandidates(coordMap, safeEdges, edges, circuitMap)
 
-	return safeEdges
+	return newEdges
 }
 
-func initSafeEdges(n int, edges map[int][]int) map[int][]int {
-	safeEdges := make(map[int][]int)
+// initSafeEdges looks at the circuit for the lattice and stores all edges in a map
+// so that they will not be removed later.
+func initSafeEdges(n int, edges map[int][]int) (map[string]bool, map[int][]int) {
+
+	safeEdges := make(map[string]bool)
 
 	// declare all edges in the circuit to be safe from elimination
 	// to ensure that the sparsified graph is always connected.
-	circuit := getCircuit(n, edges)
+	circuitMap := getCircuitMap(n, edges)
 
 	for i := 0; i < n; i++ {
-		safeEdges[i] = circuit[i]
+		for _, j := range circuitMap[i] {
+			newSafeEdge := strconv.Itoa(i) + "," + strconv.Itoa(j)
+			safeEdges[newSafeEdge] = true
+
+		}
 	}
-	return safeEdges
+	return safeEdges, circuitMap
 
 }
 
-func removeRandomCandidates(coordMap map[int][2]float64, safeEdges map[int][]int, edges map[int][]int) map[int][]int {
+// removeRandomCandidates will locate the candidate edges that may be subject to the random
+// elimination process and then performs said process.
+func removeRandomCandidates(coordMap map[int][2]float64, safeEdges map[string]bool, edges map[int][]int, circuitMap map[int][]int) map[int][]int {
+
+	newEdges := make(map[int][]int)
+	newEdges = circuitMap
+
+	newSafeEdges := make(map[string]bool)
+	newSafeEdges = safeEdges
 
 	for i := 0; i < len(coordMap); i++ {
 
-		candidateEdges := getRemovalCandidates(i, safeEdges, edges)
+		candidateEdges := getRemovalCandidates(i, newSafeEdges, edges)
 		// if a node has an unsafe edge, then its edges will be subjected to
 		// a random elimination process
 
@@ -378,20 +394,29 @@ func removeRandomCandidates(coordMap map[int][2]float64, safeEdges map[int][]int
 
 			// all edges that survive this process are declared to be safe
 			if len(candidateEdges) > 0 {
-				for j := 0; j < len(candidateEdges)-1; j++ {
+				for _, j := range candidateEdges {
+					// initialize the coordinate strings for the safe edge
+					newSafeString1 := strconv.Itoa(i) + "," + strconv.Itoa(j)
+					newSafeString2 := strconv.Itoa(j) + "," + strconv.Itoa(i)
 
-					safeEdges[candidateEdges[j]] = append(safeEdges[candidateEdges[j]], i)
-					safeEdges[i] = append(safeEdges[i], candidateEdges[j])
+					// declare them safe
+					newSafeEdges[newSafeString1] = true
+					newSafeEdges[newSafeString2] = true
+
+					// add the newly safe edges to the new edge map for each node
+					newEdges[i] = append(newEdges[i], j)
+					newEdges[j] = append(newEdges[j], i)
 				}
 			}
 		}
 	}
 
-	return safeEdges
+	return newEdges
 
 }
 
-func getRemovalCandidates(i int, safeEdges map[int][]int, edges map[int][]int) []int {
+// getRemovalCandidates takes a node and creates a list of adjacent nodes whose associated edges are not safe
+func getRemovalCandidates(i int, safeEdges map[string]bool, edges map[int][]int) []int {
 	var candidateEdges []int
 
 	// iterate over all the edges attached to a node i and check to see if they are
@@ -399,14 +424,8 @@ func getRemovalCandidates(i int, safeEdges map[int][]int, edges map[int][]int) [
 	// survived a roll already)
 	// edges that are not safe may be subject to elimination when the rolling occurs.
 	for _, edge := range edges[i] {
-		isSafe := false
-		for _, safeEdge := range safeEdges[i] {
-			if edge == safeEdge {
-				isSafe = true
-				break
-			}
-		}
-		if !isSafe {
+		stringToCheck := strconv.Itoa(i) + "," + strconv.Itoa(edge)
+		if !safeEdges[stringToCheck] {
 			candidateEdges = append(candidateEdges, edge)
 		}
 	}
