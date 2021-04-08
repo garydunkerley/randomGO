@@ -16,8 +16,8 @@ func BenchmarkGetHexagonalLattice(b *testing.B) {
 
 func BenchmarkSparsify100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		edges, coords := getHexagonalLattice(100)
-		_ = sparsifyEdges(100, edges, coords)
+		edges, coords := getHexagonalLattice(400)
+		_ = sparsifyEdges(400, edges, coords)
 	}
 }
 
@@ -30,13 +30,12 @@ func BenchMarkRemoveRandomCandidates(b *testing.B) {
 		safeEdges = removeRandomCandidates(coordMap, safeEdges, edges)
 	}
 }
-
+*/
 
 func BenchmarkGetCircuit(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		edges, _ := getHexagonalLattice(100)
-		_ = getCircuit(100, edges)
+		_ = getCircuitMap(100, edges)
 	}
 }
-*/

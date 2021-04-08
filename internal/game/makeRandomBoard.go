@@ -1,7 +1,7 @@
 package game
 
 import (
-	// "fmt"
+	//	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -58,8 +58,8 @@ func sum(array []int) int {
 // euclideanNorm gets the magnitude of a point as a vector in two-dimensional Euclidean space
 func euclideanNorm(x [2]float64) float64 {
 	var sum float64
-	for i := 0; i < len(x); i++ {
-		sum += math.Pow(x[i], 2)
+	for _, i := range x {
+		sum += math.Pow(i, 2)
 	}
 	return math.Sqrt(sum)
 }
@@ -103,8 +103,8 @@ func getCenteredHexagonalNumbers(n int) []int {
 // normal hexagonal lattice in two-dimensional Euclidean space
 func getHexagonalLattice(n int) (map[int][]int, map[int][2]float64) {
 
-	theta := math.Pi / 6
-	multiplier := float64(0)
+	theta := 2 * math.Pi / 6
+	multiplier := float64(4)
 
 	edges := make(map[int][]int)
 	coordMap := make(map[int][2]float64)
@@ -124,7 +124,7 @@ func getHexagonalLattice(n int) (map[int][]int, map[int][2]float64) {
 
 	// we will also initialize the direction of generation
 	// as being trivial
-	genDirection := [2]float64{0, 0}
+	genDirection := [2]float64{1, 0}
 
 	hexNums := getCenteredHexagonalNumbers(n)
 	hexIterate := 0
@@ -134,11 +134,13 @@ func getHexagonalLattice(n int) (map[int][]int, map[int][2]float64) {
 
 	for counter < n {
 		levelingNumber := int(math.Min(float64(hexIterate+1), float64(len(hexNums)-1)))
+
 		if counter == hexNums[levelingNumber] {
 			// move along the current direction to the
 			// node that was seen previously
+
 			currentVec = vecSum(currentVec, genDirection)
-			multiplier = 0
+			multiplier = float64(4)
 			genDirection = [2]float64{1, 0}
 
 			if hexIterate < len(hexNums)-1 {
@@ -149,6 +151,8 @@ func getHexagonalLattice(n int) (map[int][]int, map[int][2]float64) {
 
 		newVec := vecSum(currentVec, genDirection)
 		coordMap[counter] = newVec
+
+		currentVec = newVec
 
 		// After establishing the existence of a new node,
 		// we attach edges between it and nodes we have already created.
@@ -185,6 +189,10 @@ func getHexagonalLattice(n int) (map[int][]int, map[int][2]float64) {
 
 			}
 
+			multiplier = float64((int(multiplier) + 1) % 6)
+			genDirection = [2]float64{-math.Cos(multiplier * theta), -math.Sin(multiplier * theta)}
+			cellsMade = 0
+
 		} else if counter+1 == hexNums[levelingNumber] {
 			edges[counter] = append(edges[counter], hexNums[hexIterate])
 			edges[hexNums[hexIterate]] = append(edges[hexNums[hexIterate]], counter)
@@ -200,6 +208,8 @@ func getHexagonalLattice(n int) (map[int][]int, map[int][2]float64) {
 			edges[counter] = append(edges[counter], second)
 			edges[second] = append(edges[second], counter)
 
+			cellsMade += 1
+
 		} else {
 
 			first := counter - (cornerCount)
@@ -213,60 +223,15 @@ func getHexagonalLattice(n int) (map[int][]int, map[int][2]float64) {
 				edges[counter] = append(edges[counter], counter-1)
 				edges[counter-1] = append(edges[counter-1], counter)
 			}
-		}
 
-		cellsMade += 1
-
-		if cellsMade == hexIterate {
-
-			multiplier = float64((int(multiplier) + 1) % 6)
-			genDirection = [2]float64{math.Sin(multiplier * theta), math.Cos(multiplier * theta)}
-			cellsMade = 0
-
+			cellsMade += 1
 		}
 
 		counter += 1
 	}
 
-	/*
-		TODO Deprecate this and make ascending as these are not necessary
-		for i := 0; i < n; i++ {
-			slice := edges[i]
-			 ascendingSlice := makeAscending(slice)
-			 edges[i] = ascendingSlice
-		}
-	*/
-
 	return edges, coordMap
 }
-
-/*
-// makeAscending rearranges an integer slice so that its elements are in ascending order
-func makeAscending(mySlice []int) []int {
-
-	targetLength := len(mySlice)
-
-	var ascendingSlice []int
-
-	for len(ascendingSlice) < targetLength {
-		currentMinIndex := 0
-		// iterate over the elements of your slice
-		// when you find an element smaller than the
-		// current minimum, record it and move on.
-		for i := 0; i < len(mySlice); i++ {
-			if mySlice[i] <= mySlice[currentMinIndex] {
-				currentMinIndex = i
-			}
-		}
-		// add the smallest element to the ascending slice
-		// and then remove it from the original
-		ascendingSlice = append(ascendingSlice, mySlice[currentMinIndex])
-		mySlice = append(mySlice[:currentMinIndex], mySlice[currentMinIndex+1:]...)
-	}
-
-	return ascendingSlice
-}
-*/
 
 // getCircuit takes our collection of edges and outputs an
 // encoding of a spanning tree
@@ -371,13 +336,15 @@ func removeRandomCandidates(coordMap map[int][2]float64, safeEdges map[string]bo
 			norm := euclideanNorm(coordMap[i])
 
 			stillRolling := true
-			for stillRolling && len(candidateEdges) > 1 {
+
+			for stillRolling && len(candidateEdges) > 0 {
 
 				//TODO: tweak this until I get something I like.
 				// Right now, being farther away from the center increases the likelihood that
 				// a node will lose and edge as does having a lot of edges
 
-				prob := (2 * math.Pow(math.Atan(norm+2), float64(6-len(candidateEdges)))) / math.Pi
+				//				fmt.Println("The norm of node ", i, " is ", norm)
+				prob := math.Pow((2*math.Atan(norm))/math.Pi, float64(4-len(candidateEdges)))
 				// prob := float64(0)
 				rand.Seed(time.Now().UnixNano())
 				v := rand.Float64()
