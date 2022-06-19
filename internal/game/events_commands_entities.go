@@ -107,7 +107,7 @@ type mockGameDatabase struct {
 // addGame creates a new game between given users and increments nextGameID
 func (db *mockGameDatabase) addGame(blackPlayer user, whitePlayer user) {
 	newID := db.nextGameID
-	newGame := gameInstance{black: blackPlayer, white: whitePlayer, id: newID}
+	newGame := gameInstance{black: blackPlayer, white: whitePlayer, gameID: newID}
 	db.gameLookup[newID] = newGame
 	db.nextGameID++
 }
@@ -256,7 +256,7 @@ func (c RespondToChallenge) isCommand() {}
 func (c RespondToChallenge) issuer() string {
 	return c.commandIssuer
 }
-
+*/
 type timeStructure struct {
 	primaryTimeLength int // in seconds
 
@@ -265,6 +265,7 @@ type timeStructure struct {
 	lengthByoYomi int // in seconds
 }
 
+/*
 type Player struct {
 	playerid       string
 	profilePicture string // URL (probably to Imgur) to import profilePictures
