@@ -210,7 +210,7 @@ func (gameState *boardState) beginScoring() {
 	ass := gameState.history.allStoneStrings
 	cs := ass[len(ass)-1]
 
-	blackScore, whiteScore, _ = getNaiveScoreSuggestion(gameState.GoGraph, cs)
+	blackScore, whiteScore, _ := getNaiveScoreSuggestion(gameState.GoGraph, cs)
 	//	visualizeBoard(gameState.GoGraph, isRandom, dead)
 	fmt.Println("I think the score should be: ")
 	fmt.Println("Black:", blackScore)
