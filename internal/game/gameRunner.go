@@ -159,8 +159,9 @@ func (gameState *boardState) updateEbitenBoardInfo(boardInfo EbitenBoardInfo) Eb
 func (gameState boardState) runGame(boardInfo EbitenBoardInfo, isRandom bool) {
 	coo, nodeCount := gameState.coords, gameState.nodeCount
 
-	var blackScore float64
-	var whiteScore float64
+	//TODO: remove these? I don't remember why they were put here
+	//	var blackScore float64
+	//	var whiteScore float64
 	dead := make(map[*node]bool)
 
 	prompt := promptRect()
