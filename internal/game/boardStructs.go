@@ -272,16 +272,15 @@ func (s *boardState) playMoveInput(input moveInput) error {
 	}
 	s.history.addMoveAndStrings(m, next)
 
+	//DEBUG: Stuff was commented out starting here.
+	// I think this is the problem: the assignAllLiberties map isn't working
+	a := s.history.allStoneStrings[len(s.history.allStoneStrings)-1]
+
+	currentCS := &a
+	currentCS.assignAllLiberties(s.GoGraph)
+	//DEBUG: ending here
+
 	s.boardUpdate(m, subsumed, capt, newString)
-
-	/*
-
-		a := s.history.allStoneStrings[len(s.history.allStoneStrings)-1]
-
-		currentCS := &a
-		currentCS.assignAllLiberties(s.GoGraph)
-	*/
-
 	// locates and documents ko points, if any exist.
 	s.setKoPoint(nodeID, newString, capt)
 

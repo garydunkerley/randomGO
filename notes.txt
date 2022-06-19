@@ -1,0 +1,5 @@
+TODO:
+
+fix liberty capture error by eliminating the "liberty" filed in the stoneString struct and reformatting code so that liberties for stoneStrings are computed as needed.
+
+

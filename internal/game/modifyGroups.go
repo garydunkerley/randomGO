@@ -78,6 +78,7 @@ func (G GoGraph) getCapturedStrings(nodeID int, color int8) []stoneString {
 
 	for z := range captiveStringReps {
 		myStoneString := G.stringOf[z]
+		fmt.Println("DEBUG: stringOF method called and returns", myStoneString)
 		if len(myStoneString.liberties) == 1 {
 			for s := range myStoneString.liberties {
 				if s == nodeID {
@@ -108,39 +109,26 @@ func (cs *chromaticStrings) assignAllLiberties(gg GoGraph) {
 	whiteStrings := cs.white
 
 	for _, b := range blackStrings {
-		accountedFor := make(map[int]bool)
 		newLibs := make(map[int]bool)
 
-		for s := range b.stones {
-			for n := range gg.nodes[s].neighbors {
-				if accountedFor[n] == false && gg.nodes[n].color == 1 {
-					newLibs[n] = true
-					accountedFor[n] = true
-				} else {
-					accountedFor[n] = true
-				}
+		for stone := range b.stones {
+			for n := range getLiberties(gg.nodes[stone]) {
+				newLibs[n] = true
 			}
 		}
 		b.liberties = newLibs
 	}
 
 	for _, w := range whiteStrings {
-		accountedFor := make(map[int]bool)
 		newLibs := make(map[int]bool)
 
-		for s := range w.stones {
-			for n := range gg.nodes[s].neighbors {
-				if accountedFor[n] == false && gg.nodes[n].color == 1 {
-					newLibs[n] = true
-					accountedFor[n] = true
-				} else {
-					accountedFor[n] = true
-				}
+		for stone := range w.stones {
+			for liberty := range getLiberties(gg.nodes[stone]) {
+				newLibs[liberty] = true
 			}
 		}
 		w.liberties = newLibs
 	}
-
 	return
 
 }
